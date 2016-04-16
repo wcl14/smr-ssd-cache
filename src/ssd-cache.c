@@ -2,28 +2,38 @@
 #include <stdlib.h>
 #include "ssd-cache.h"
 #include "smr-simulator.h"
+#include "strategy.h"
 
 static volatile void flushSSDBuffer(SSDBufferDesc *ssd_buf_hdr);
 static volatile SSDBufferDesc * SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool *found);
+static volatile SSDBufferDesc * getSSDStrategyBuffer(SSDEvictionStrategy strategy);
 
 /*
  * init buffer hash table, strategy_control, buffer, work_mem
  */
 void initSSDBuffer()
 {
-        initSSDBufTable(NSSDBufTables);
+	initSSDBufTable(NSSDBufTables);
 
-        ssd_buffer_descriptors = (SSDBufferDesc *) malloc(sizeof(SSDBufferDesc)*NSSDBuffers);
-        SSDBufferDesc *ssd_buf_hdr;
-        int i;
-        ssd_buf_hdr = ssd_buffer_descriptors;
-        for (i = 0; i < NSSDBuffers; ssd_buf_hdr++, i++) {
-		//ssd_buf_hdr->ssd_buf_flag = 0;
+	ssd_buffer_strategy_control = (SSDBufferStrategyControl *) malloc(sizeof(SSDBufferStrategyControl));
+	ssd_buffer_strategy_control->first_freessd = 0;
+	ssd_buffer_strategy_control->last_freessd = NSSDBuffers - 1;
+	ssd_buffer_strategy_control->next_victimssd = 0;
+
+	ssd_buffer_descriptors = (SSDBufferDesc *) malloc(sizeof(SSDBufferDesc)*NSSDBuffers);
+	SSDBufferDesc *ssd_buf_hdr;
+	int i;
+	ssd_buf_hdr = ssd_buffer_descriptors;
+	for (i = 0; i < NSSDBuffers; ssd_buf_hdr++, i++) {
+		ssd_buf_hdr->ssd_buf_flag = 0;
 		ssd_buf_hdr->ssd_buf_id = i;
-		//ssd_buf_hdr->usage_count = 0;
-		//ssd_buf_hdr->next_freebuf = i + 1;
-        }
-        //ssd_buffer_descriptors[NSSDBuffers - 1].next_freebuf = -1;
+		ssd_buf_hdr->usage_count = 0;
+		ssd_buf_hdr->next_freessd = i + 1;
+	}
+	ssd_buffer_descriptors[NSSDBuffers - 1].next_freessd = -1;
+
+	ssd_buffer_blocks = (char *) malloc(SSD_BUFFER_SIZE*NSSDBuffers);
+	memset(ssd_buffer_blocks, 0, SSD_BUFFER_SIZE*NSSDBuffers);
 }
 
 static volatile void flushSSDBuffer(SSDBufferDesc *ssd_buf_hdr)
@@ -56,7 +66,7 @@ static volatile SSDBufferDesc * SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool *f
                 return ssd_buf_hdr;
         }
 
-	ssd_buf_hdr = getStrategyBuffer(CLOCK);
+	ssd_buf_hdr = getSSDStrategyBuffer(CLOCK);
 
         unsigned char old_flag = ssd_buf_hdr->ssd_buf_flag;
         SSDBufferTag old_tag = ssd_buf_hdr->ssd_buf_tag;
@@ -77,11 +87,12 @@ static volatile SSDBufferDesc * SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool *f
         return ssd_buf_hdr;
 }
 
-static volatile SSDBufDesc * getStrategyBuffer(SSDEvictionStrategy strategy)
+static volatile SSDBufferDesc * getSSDStrategyBuffer(SSDEvictionStrategy strategy)
 {
-	if (Strategy == CLOCK)
-		return getCLOCKBuffer()
-	else 
+	if (strategy == CLOCK)
+		return getCLOCKBuffer();
+	else if (strategy == LRUOfBand)
+		return getLRUOfBandBuffer(); 
 }
 
 /*
