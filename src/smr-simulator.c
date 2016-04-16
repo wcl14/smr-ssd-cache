@@ -15,25 +15,29 @@ static unsigned GetSMROffsetInBandFromSSD(SSDDesc *ssd_hdr);
  */
 void initSSD()
 {
-        initSSDTable(NSSDTables);
+	initSSDTable(NSSDTables);
 
 	ssd_strategy_control = (SSDStrategyControl *) malloc(sizeof(SSDStrategyControl));
 	ssd_strategy_control->first_usedssd = 0;
 	ssd_strategy_control->last_usedssd = -1;
 	ssd_strategy_control->n_usedssd = 0;
 
-        ssd_descriptors = (SSDDesc *) malloc(sizeof(SSDDesc)*NSSDs);
-        SSDDesc *ssd_hdr;
-        int i;
-        ssd_hdr = ssd_descriptors;
-        for (i = 0; i < NSSDs; ssd_hdr++, i++) {
-                ssd_hdr->ssd_flag = 0;
-                ssd_hdr->ssd_id = i;
+	ssd_descriptors = (SSDDesc *) malloc(sizeof(SSDDesc)*NSSDs);
+	SSDDesc *ssd_hdr;
+	int i;
+	ssd_hdr = ssd_descriptors;
+	for (i = 0; i < NSSDs; ssd_hdr++, i++) {
+		ssd_hdr->ssd_flag = 0;
+		ssd_hdr->ssd_id = i;
 //		ssd_hdr->usage_count = 0;
 //		ssd_hdr->next_freessd = i + 1;
         }
 //	ssd_descriptors[NSSDs - 1].next_freessd = -1;
 	interval_time = 0;
+
+	ssd_blocks = (char *) malloc(SSD_SIZE*NSSDs);
+	memset(ssd_blocks, 0, SSD_SIZE*NSSDs);
+
 }
 
 int smrread(int smr_fd, char* buffer, size_t size, off_t offset)

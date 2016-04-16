@@ -25,8 +25,11 @@ unsigned	interval_time;
 
 SSDBufferDesc	*ssd_buffer_descriptors;
 char		*ssd_buffer_blocks;
-SSDStrategyControl	*ssd_strategy_control;
+SSDBufferStrategyControl	*ssd_buffer_strategy_control;
 SSDBufferHashBucket	*ssd_buffer_hashtable;
+
+SSDStrategyControl	*ssd_strategy_control;
+
 
 SSDDesc		*ssd_descriptors;
 char		*ssd_blocks;

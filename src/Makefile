@@ -1,5 +1,5 @@
-all: gloable.o ssd_buf_table.o ssd-cache.o inner_ssd_buf_table.o smr-simulator.o main.o
-	gcc -o smr-ssd-cache gloable.o ssd_buf_table.o ssd-cache.o inner_ssd_buf_table.o smr-simulator.o main.o
+all: gloable.o ssd_buf_table.o ssd-cache.o inner_ssd_buf_table.o smr-simulator.o strategy.o main.o
+	gcc -o smr-ssd-cache gloable.o ssd_buf_table.o ssd-cache.o inner_ssd_buf_table.o smr-simulator.o strategy.o main.o
 
 gloable.o:
 	gcc -c gloable.c -o gloable.o
@@ -11,8 +11,10 @@ inner_ssd_buf_table.o:
 	gcc -c inner_ssd_buf_table.c -o inner_ssd_buf_table.o
 smr-simulator.o:
 	gcc -c smr-simulator.c -o smr-simulator.o
+strategy.o:
+	gcc -c strategy.c -o strategy.o
 main.o:
 	gcc -c main.c -o main.o
 
 clean:
-	rm smr-ssd-cache gloable.o ssd_buf_table.o ssd-cache.o inner_ssd_buf_table.o smr-simulator.o main.o
+	rm smr-ssd-cache gloable.o ssd_buf_table.o ssd-cache.o inner_ssd_buf_table.o smr-simulator.o strategy.o main.o
