@@ -7,8 +7,8 @@
 static SSDDesc *getStrategySSD();
 static void freeStrategySSD();
 static volatile void flushSSD(SSDDesc *ssd_hdr);
-static unsigned GetSMRBandNumFromSSD(SSDDesc *ssd_hdr);
-static unsigned GetSMROffsetInBandFromSSD(SSDDesc *ssd_hdr);
+static unsigned long GetSMRBandNumFromSSD(SSDDesc *ssd_hdr);
+static off_t GetSMROffsetInBandFromSSD(SSDDesc *ssd_hdr);
 
 /*
  * init inner ssd buffer hash table, strategy_control, buffer, work_mem
@@ -24,7 +24,7 @@ void initSSD()
 
 	ssd_descriptors = (SSDDesc *) malloc(sizeof(SSDDesc)*NSSDs);
 	SSDDesc *ssd_hdr;
-	int i;
+	long i;
 	ssd_hdr = ssd_descriptors;
 	for (i = 0; i < NSSDs; ssd_hdr++, i++) {
 		ssd_hdr->ssd_flag = 0;
@@ -44,9 +44,10 @@ int smrread(int smr_fd, char* buffer, size_t size, off_t offset)
 {
 	SSDTag ssd_tag;
 	SSDDesc *ssd_hdr;
-	int i, returnCode;
-	unsigned ssd_hash;
-	unsigned ssd_id;
+	long i;
+    int returnCode;
+	long ssd_hash;
+	long ssd_id;
 	
 	for (i = 0; i * BLCKSZ < size; i++) {
 		ssd_tag.offset = offset + i * BLCKSZ;
@@ -57,7 +58,7 @@ int smrread(int smr_fd, char* buffer, size_t size, off_t offset)
 			ssd_hdr = &ssd_descriptors[ssd_id];
 			returnCode = pread(*inner_ssd_fd, buffer, BLCKSZ, ssd_hdr->ssd_id * BLCKSZ);
 		        if(returnCode < 0) {
-        		        printf("[ERROR] smrread():-------read from inner ssd: fd=%d, errorcode=%d, offset=%d\n", returnCode, ssd_hdr->ssd_id * BLCKSZ);
+        		        printf("[ERROR] smrread():-------read from inner ssd: fd=%d, errorcode=%d, offset=%lu\n", *inner_ssd_fd, returnCode, ssd_hdr->ssd_id * BLCKSZ);
                 		exit(-1);
 	        	}
 	
@@ -65,7 +66,7 @@ int smrread(int smr_fd, char* buffer, size_t size, off_t offset)
 		} else {
 			returnCode = pread(smr_fd, buffer, BLCKSZ, offset + i * BLCKSZ);
 			if(returnCode < 0) {
-        			printf("[ERROR] smrread():-------read from smr disk: fd=%d, errorcode=%d, offset=%d\n", returnCode, offset + i * BLCKSZ);
+        			printf("[ERROR] smrread():-------read from smr disk: fd=%d, errorcode=%d, offset=%lu\n", *inner_ssd_fd, returnCode, offset + i * BLCKSZ);
 		                exit(-1);
         		}
 		}
@@ -78,9 +79,10 @@ int smrwrite(int smr_fd, char* buffer, size_t size, off_t offset)
 {
 	SSDTag ssd_tag;
 	SSDDesc *ssd_hdr;
-	int i, returnCode;
-	unsigned ssd_hash;
-	int ssd_id;
+	long i;
+    int returnCode;
+	long ssd_hash;
+	long ssd_id;
 
 	for (i = 0; i * BLCKSZ < size; i++) {
 		ssd_tag.offset = offset + i * BLCKSZ;
@@ -100,7 +102,7 @@ int smrwrite(int smr_fd, char* buffer, size_t size, off_t offset)
 		
 		returnCode = pwrite(*inner_ssd_fd, buffer, BLCKSZ, ssd_hdr->ssd_id * BLCKSZ);
 		if(returnCode < 0) {
-        		printf("[ERROR] smrread():-------read from smr disk: fd=%d, errorcode=%d, offset=%d\n", returnCode, offset + i * BLCKSZ);
+        		printf("[ERROR] smrread():-------read from smr disk: fd=%d, errorcode=%d, offset=%lu\n", *inner_ssd_fd, returnCode, offset + i * BLCKSZ);
 		               exit(-1);
         	}
 		
@@ -115,7 +117,7 @@ static SSDDesc *getStrategySSD()
 	while (ssd_strategy_control->n_usedssd >= NSSDs)
 	{
 		usleep(1);
-		if (DEBUG) printf("[INFO] getStrategySSD():--------ssd_strategy_control->n_usedssd=%d\n", ssd_strategy_control->n_usedssd);	
+		if (DEBUG) printf("[INFO] getStrategySSD():--------ssd_strategy_control->n_usedssd=%ld\n", ssd_strategy_control->n_usedssd);	
 	}
 	//allocatelock
 	ssd_strategy_control->last_usedssd = (ssd_strategy_control->last_usedssd + 1) % NSSDs;
@@ -126,7 +128,7 @@ static SSDDesc *getStrategySSD()
 
 static void freeStrategySSD()
 {
-	int i;
+	long i;
 
 	while (1) {
 		interval_time++;
@@ -149,19 +151,20 @@ static void freeStrategySSD()
 
 static volatile void flushSSD(SSDDesc *ssd_hdr)
 {
-	int i, returnCode;
+	long i;
+    int returnCode;
 	char* buffer;
 	char* band[BNDSZ/BLCKSZ];
 	bool bandused[BNDSZ/BLCKSZ];
-	unsigned BandNum = GetSMRBandNumFromSSD(ssd_hdr);
-	unsigned Offset;
+	unsigned long BandNum = GetSMRBandNumFromSSD(ssd_hdr);
+	off_t Offset;
 
 	memset(bandused, 0, BNDSZ/BLCKSZ*sizeof(bool));
 	for (i = 0; i < BNDSZ/BLCKSZ; i++)
 		band[i] = (char *) malloc(sizeof(char)*BLCKSZ);
 	returnCode = pread(*inner_ssd_fd, band[GetSMROffsetInBandFromSSD(ssd_hdr)], BLCKSZ, ssd_hdr->ssd_id * BLCKSZ);
 	if(returnCode < 0) {
-		printf("[ERROR] flushSSD():-------read from inner ssd: fd=%d, errorcode=%d, offset=%d\n", returnCode, ssd_hdr->ssd_id * BLCKSZ);
+		printf("[ERROR] flushSSD():-------read from inner ssd: fd=%d, errorcode=%d, offset=%lu\n", *inner_ssd_fd, returnCode, ssd_hdr->ssd_id * BLCKSZ);
                 exit(-1);
 	}
 
@@ -171,7 +174,7 @@ static volatile void flushSSD(SSDDesc *ssd_hdr)
 			Offset = GetSMROffsetInBandFromSSD(&ssd_descriptors[i]);
 			returnCode = pread(*inner_ssd_fd, band[Offset], BLCKSZ, ssd_descriptors[i].ssd_id * BLCKSZ);
 			if(returnCode < 0) {
-				printf("[ERROR] flushSSD():-------read from inner ssd: fd=%d, errorcode=%d, offset=%d\n", returnCode, ssd_descriptors[i].ssd_id * BLCKSZ);
+				printf("[ERROR] flushSSD():-------read from inner ssd: fd=%d, errorcode=%d, offset=%lu\n", *inner_ssd_fd, returnCode, ssd_descriptors[i].ssd_id * BLCKSZ);
 		                exit(-1);
 			}
 			bandused[Offset] = 1;
@@ -184,7 +187,7 @@ static volatile void flushSSD(SSDDesc *ssd_hdr)
 		if (bandused[i] == 0) {
 			returnCode = pread(*smr_fd, band[i], BLCKSZ, (BandNum * BNDSZ / BLCKSZ + i) * BLCKSZ);
 			if(returnCode < 0) {
-				printf("[ERROR] flushSSD():-------read from smr: fd=%d, errorcode=%d, offset=%d\n", returnCode, (BandNum * BNDSZ / BLCKSZ + i) * BLCKSZ);
+				printf("[ERROR] flushSSD():-------read from smr: fd=%d, errorcode=%d, offset=%lu\n", *inner_ssd_fd, returnCode, (BandNum * BNDSZ / BLCKSZ + i) * BLCKSZ);
 		                exit(-1);
 			}
 		}
@@ -192,18 +195,18 @@ static volatile void flushSSD(SSDDesc *ssd_hdr)
 
 	returnCode = pwrite(*smr_fd, band, BNDSZ, BandNum * BNDSZ);
 	if(returnCode < 0) {
-		printf("[ERROR] flushSSD():-------write to smr: fd=%d, errorcode=%d, offset=%d\n", returnCode, BandNum * BNDSZ);
+		printf("[ERROR] flushSSD():-------write to smr: fd=%d, errorcode=%d, offset=%lu\n", *inner_ssd_fd, returnCode, BandNum * BNDSZ);
                 exit(-1);
 	}
 }
 
 
-static unsigned GetSMRBandNumFromSSD(SSDDesc *ssd_hdr)
+static unsigned long GetSMRBandNumFromSSD(SSDDesc *ssd_hdr)
 {
 	return ssd_hdr->ssd_tag.offset / BNDSZ;
 }
 
-static unsigned GetSMROffsetInBandFromSSD(SSDDesc *ssd_hdr)
+static off_t GetSMROffsetInBandFromSSD(SSDDesc *ssd_hdr)
 {
 	return (ssd_hdr->ssd_tag.offset / BLCKSZ) % (BNDSZ / BLCKSZ);
 }

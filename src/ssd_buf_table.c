@@ -4,10 +4,10 @@
 
 static bool isSamebuf(SSDBufferTag *, SSDBufferTag *);
 
-void initSSDBufTable(int size)
+void initSSDBufTable(size_t size)
 {
 	ssd_buffer_hashtable = (SSDBufferHashBucket *)malloc(sizeof(SSDBufferHashBucket)*size);
-	int i;
+	size_t i;
 	SSDBufferHashBucket *ssd_buf_hash = ssd_buffer_hashtable;
 	for (i = 0; i < size; ssd_buf_hash++, i++){
 		ssd_buf_hash->ssd_buf_id = -1;
@@ -16,19 +16,18 @@ void initSSDBufTable(int size)
 	}
 }
 
-unsigned ssdbuftableHashcode(SSDBufferTag *ssd_buf_tag)
+unsigned long ssdbuftableHashcode(SSDBufferTag *ssd_buf_tag)
 {
-	unsigned ssd_buf_hash = (ssd_buf_tag->offset / SSD_BUFFER_SIZE) % NSSDBufTables;
+	unsigned long ssd_buf_hash = (ssd_buf_tag->offset / SSD_BUFFER_SIZE) % NSSDBufTables;
 	return ssd_buf_hash;
 }
 
-int ssdbuftableLookup(SSDBufferTag *ssd_buf_tag, unsigned hash_code)
+size_t ssdbuftableLookup(SSDBufferTag *ssd_buf_tag, unsigned long hash_code)
 {
 	if (DEBUG)
-		printf("[INFO] Lookup ssd_buf_tag: %u\n",ssd_buf_tag->offset);
+		printf("[INFO] Lookup ssd_buf_tag: %lu\n",ssd_buf_tag->offset);
 	SSDBufferHashBucket *nowbucket = GetSSDBufHashBucket(hash_code);
 	while (nowbucket != NULL) {
-	//	printf("nowbucket->buf_id = %u %u %u\n", nowbucket->hash_key.rel.database, nowbucket->hash_key.rel.relation, nowbucket->hash_key.block_num);
 		if (isSamebuf(&nowbucket->hash_key, ssd_buf_tag)) {
 	//		printf("find\n");
 			return nowbucket->ssd_buf_id;
@@ -40,10 +39,10 @@ int ssdbuftableLookup(SSDBufferTag *ssd_buf_tag, unsigned hash_code)
 	return -1;
 }
 
-int ssdbuftableInsert(SSDBufferTag *ssd_buf_tag, unsigned hash_code, int ssd_buf_id)
+long ssdbuftableInsert(SSDBufferTag *ssd_buf_tag, unsigned long hash_code, long ssd_buf_id)
 {
 	if (DEBUG)
-		printf("[INFO] Insert buf_tag: %u\n",ssd_buf_tag->offset);
+		printf("[INFO] Insert buf_tag: %lu\n",ssd_buf_tag->offset);
 	SSDBufferHashBucket *nowbucket = GetSSDBufHashBucket(hash_code);
 	while (nowbucket->next_item != NULL && nowbucket != NULL) {
 		if (isSamebuf(&nowbucket->hash_key, ssd_buf_tag)) {
@@ -67,12 +66,12 @@ int ssdbuftableInsert(SSDBufferTag *ssd_buf_tag, unsigned hash_code, int ssd_buf
 	return -1;
 }
 
-int ssdbuftableDelete(SSDBufferTag *ssd_buf_tag, unsigned hash_code)
+long ssdbuftableDelete(SSDBufferTag *ssd_buf_tag, unsigned long hash_code)
 {
 	if (DEBUG)
-		printf("[INFO] Delete buf_tag: %u\n",ssd_buf_tag->offset);
+		printf("[INFO] Delete buf_tag: %lu\n",ssd_buf_tag->offset);
 	SSDBufferHashBucket *nowbucket = GetSSDBufHashBucket(hash_code);
-	int del_id;
+	long del_id;
 	SSDBufferHashBucket *delitem;
 	nowbucket->next_item;
 	while (nowbucket->next_item != NULL && nowbucket != NULL) {

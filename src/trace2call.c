@@ -13,15 +13,21 @@ void trace_to_iocall(char* trace_file_path) {
 	double time;
 	char action;
 	char* write_or_read;
-	long blk_address;
-	int offset;
+	off_t offset;
+    size_t size;
 	char* ssd_buffer;
 	while(feof(trace)) {
-		fscanf(trace, "%lf %c %s %ld %d", time, action, write_or_read, blk_address, offset);
+		fscanf(trace, "%lf %c %s %lu %lu", &time, &action, write_or_read, &offset, &size);
+        size = size*1024;
 		if(strstr(write_or_read, "W")) {
-			write_block(blk_address + offset, ssd_buffer);
+            ssd_buffer = (char *)malloc(sizeof(char)*BLCKSZ);
+            while (size > 0 ) {
+			    write_block(offset, ssd_buffer);
+                offset += BLCKSZ;
+                size -= BLCKSZ;
+            }
 		} else if(strstr(write_or_read, "R")) {
-			read_block(blk_address + offset, ssd_buffer); 
+			read_block(offset, ssd_buffer); 
 		}
 	}
 	fclose(trace);
