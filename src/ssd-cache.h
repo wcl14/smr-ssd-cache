@@ -1,22 +1,23 @@
 #define DEBUG 0
 /* ---------------------------ssd cache---------------------------- */
 
-#define size_t	unsigned
-#define off_t	unsigned
+#include <pthread.h>
+//#define size_t	unsigned long
+#define off_t	unsigned long
 #define bool	unsigned char
 
 typedef struct 
 {
-	unsigned	offset;
+	off_t	offset;
 } SSDBufferTag;
 
 typedef struct
 {
 	SSDBufferTag 	ssd_buf_tag;
-	int 		ssd_buf_id;				// ssd buffer location in shared buffer
+	long 		ssd_buf_id;				// ssd buffer location in shared buffer
 	unsigned 	ssd_buf_flag;
-	unsigned	usage_count;
-	int			next_freessd;
+	unsigned long	usage_count;
+	long		next_freessd;
 } SSDBufferDesc;
 
 #define SSD_BUF_VALID 0x01
@@ -25,16 +26,16 @@ typedef struct
 typedef struct SSDBufferHashBucket
 {
 	SSDBufferTag 			hash_key;
-	int 				ssd_buf_id;
+	long    				ssd_buf_id;
 	struct SSDBufferHashBucket 	*next_item;
 } SSDBufferHashBucket;
 
 typedef struct
 {
-	int		n_usedssd;			// For eviction
-	int		first_freessd;		// Head of list of free ssds
-	int		last_freessd;		// Tail of list of free ssds
-	int		next_victimssd;		// For CLOCK
+	long		n_usedssd;			// For eviction
+	long		first_freessd;		// Head of list of free ssds
+	long		last_freessd;		// Tail of list of free ssds
+	long		next_victimssd;		// For CLOCK
 } SSDBufferStrategyControl;
 
 typedef enum
@@ -53,12 +54,14 @@ extern SSDBufferStrategyControl *ssd_buffer_strategy_control;
 #define GetSSDBufHashBucket(hash_code) ((SSDBufferHashBucket *) (ssd_buffer_hashtable + (unsigned) (hash_code)))
 
 extern void initSSDBuffer();
-extern int read(unsigned offset);
-extern int write(unsigned offset);
+extern void read_block(off_t offset, char* ssd_buffer);
+extern void read_block(off_t offset, char* ssd_buffer);
+//extern int read(unsigned offset);
+//extern int write(unsigned offset);
 
-extern unsigned NSSDBuffers;
-extern unsigned NSSDBufTables;
-extern unsigned SSD_BUFFER_SIZE;
+extern unsigned long NSSDBuffers;
+extern unsigned long NSSDBufTables;
+extern size_t SSD_BUFFER_SIZE;
 extern char	smr_device[100];
-extern int *	smr_fd;
-extern int *	ssd_fd;
+extern int 	smr_fd;
+extern int 	ssd_fd;
