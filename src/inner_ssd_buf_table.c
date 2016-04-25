@@ -44,7 +44,7 @@ long ssdtableLookup(SSDTag *ssd_tag, unsigned long hash_code)
 long ssdtableInsert(SSDTag *ssd_tag, unsigned long hash_code, long ssd_id)
 {
 	if (DEBUG)
-		printf("[INFO] Insert ssd_tag: %u\n",ssd_tag->offset);
+		printf("[INFO] Insert ssd_tag: %lu, hash_code=%lu\n",ssd_tag->offset, hash_code);
 	SSDHashBucket *nowbucket = GetSSDHashBucket(hash_code);
 	while (nowbucket->next_item != NULL && nowbucket != NULL) {
 		if (isSamessd(&nowbucket->hash_key, ssd_tag)) {
@@ -71,13 +71,12 @@ long ssdtableInsert(SSDTag *ssd_tag, unsigned long hash_code, long ssd_id)
 long ssdtableDelete(SSDTag *ssd_tag, unsigned long hash_code)
 {
 	if (DEBUG)
-		printf("[INFO] Delete ssd_tag: %u\n",ssd_tag->offset);
+		printf("[INFO] Delete ssd_tag: %lu, hash_code=%lu\n",ssd_tag->offset, hash_code);
 	SSDHashBucket *nowbucket = GetSSDHashBucket(hash_code);
 	long del_id;
 	SSDHashBucket *delitem;
 	nowbucket->next_item;
 	while (nowbucket->next_item != NULL && nowbucket != NULL) {
-        printf("isSamessd %ld\n", nowbucket->next_item);
 		if (isSamessd(&nowbucket->next_item->hash_key, ssd_tag)) {
 			del_id = nowbucket->next_item->ssd_id;
 			break;

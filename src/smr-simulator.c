@@ -201,7 +201,7 @@ static volatile void flushSSD(SSDDesc *ssd_hdr)
 		    long tmp_hash = ssdtableHashcode(&ssd_descriptors[i%NSSDs].ssd_tag);
 		    long tmp_id = ssdtableLookup(&ssd_descriptors[i%NSSDs].ssd_tag, tmp_hash);
             printf("tmp_id=%ld\n", tmp_id);
-		    ssdtableDelete(&ssd_descriptors[i%NSSDs].ssd_tag, ssd_descriptors[i%NSSDs].ssd_id);
+		    ssdtableDelete(&ssd_descriptors[i%NSSDs].ssd_tag, ssdtableHashcode(&ssd_descriptors[i%NSSDs].ssd_tag), ssd_descriptors[i%NSSDs].ssd_id);
             printf("after ssdtableDelete\n");
 			ssd_descriptors[i%NSSDs].ssd_flag = 0;
 		}

@@ -1,4 +1,4 @@
-#define DEBUG 1
+#define DEBUG 0
 /* ---------------------------ssd cache---------------------------- */
 
 #include <pthread.h>
