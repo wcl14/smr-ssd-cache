@@ -1,5 +1,6 @@
-#define DEBUG 0
+#define DEBUG 1
 /* ---------------------------smr simulator---------------------------- */
+#include <pthread.h>
 
 typedef struct
 {
@@ -53,6 +54,10 @@ extern unsigned	long NSSDLIMIT;
 extern unsigned long NSSDCLEAN;
 extern char     smr_device[100];
 extern char	inner_ssd_device[100];
-extern int *	inner_ssd_fd;
-extern int *	smr_fd;
+extern int 	inner_ssd_fd;
+extern int 	smr_fd;
 extern unsigned	long interval_time;
+extern pthread_mutex_t free_ssd_mutex;
+extern pthread_mutex_t inner_ssd_hdr_mutex;
+extern pthread_mutex_t inner_ssd_hash_mutex;
+

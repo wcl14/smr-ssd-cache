@@ -1,7 +1,8 @@
-#define DEBUG 0
+#define DEBUG 1
 /* ---------------------------ssd cache---------------------------- */
 
-#define size_t	unsigned long
+#include <pthread.h>
+//#define size_t	unsigned long
 #define off_t	unsigned long
 #define bool	unsigned char
 
@@ -62,5 +63,5 @@ extern unsigned long NSSDBuffers;
 extern unsigned long NSSDBufTables;
 extern size_t SSD_BUFFER_SIZE;
 extern char	smr_device[100];
-extern int *	smr_fd;
-extern int *	ssd_fd;
+extern int 	smr_fd;
+extern int 	ssd_fd;

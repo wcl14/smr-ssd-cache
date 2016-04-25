@@ -10,7 +10,7 @@ ssd-cahce.o:
 inner_ssd_buf_table.o:
 	gcc -c inner_ssd_buf_table.c -o inner_ssd_buf_table.o
 smr-simulator.o:
-	gcc -c smr-simulator.c -o smr-simulator.o
+	gcc -c smr-simulator.c -o smr-simulator.o -lpthread
 strategy.o:
 	gcc -c strategy.c -o strategy.o
 trace2call.o:
