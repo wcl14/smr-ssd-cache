@@ -60,4 +60,4 @@ extern unsigned	long interval_time;
 extern pthread_mutex_t free_ssd_mutex;
 extern pthread_mutex_t inner_ssd_hdr_mutex;
 extern pthread_mutex_t inner_ssd_hash_mutex;
-
+extern void initSSD();

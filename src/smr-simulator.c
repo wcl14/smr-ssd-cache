@@ -2,11 +2,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <memory.h>
+
 #include "ssd-cache.h"
 #include "smr-simulator.h"
+#include "inner_ssd_buf_table.h"
 
 static SSDDesc *getStrategySSD();
-static void freeStrategySSD();
+static void* freeStrategySSD();
 static volatile void flushSSD(SSDDesc *ssd_hdr);
 static unsigned long GetSMRBandNumFromSSD(SSDDesc *ssd_hdr);
 static off_t GetSMROffsetInBandFromSSD(SSDDesc *ssd_hdr);
@@ -141,7 +144,7 @@ static SSDDesc *getStrategySSD()
 	return &ssd_descriptors[ssd_strategy_control->last_usedssd];
 }
 
-static void freeStrategySSD()
+static void* freeStrategySSD()
 {
 	long i;
 
@@ -201,7 +204,7 @@ static volatile void flushSSD(SSDDesc *ssd_hdr)
 		    long tmp_hash = ssdtableHashcode(&ssd_descriptors[i%NSSDs].ssd_tag);
 		    long tmp_id = ssdtableLookup(&ssd_descriptors[i%NSSDs].ssd_tag, tmp_hash);
             printf("tmp_id=%ld\n", tmp_id);
-		    ssdtableDelete(&ssd_descriptors[i%NSSDs].ssd_tag, ssdtableHashcode(&ssd_descriptors[i%NSSDs].ssd_tag), ssd_descriptors[i%NSSDs].ssd_id);
+		    ssdtableDelete(&ssd_descriptors[i%NSSDs].ssd_tag, ssdtableHashcode(&ssd_descriptors[i%NSSDs].ssd_tag));
             printf("after ssdtableDelete\n");
 			ssd_descriptors[i%NSSDs].ssd_flag = 0;
 		}

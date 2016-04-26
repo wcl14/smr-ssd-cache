@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "smr-simulator.h"
 #include "ssd-cache.h"
@@ -53,7 +54,7 @@ long ssdtableInsert(SSDTag *ssd_tag, unsigned long hash_code, long ssd_id)
 		nowbucket = nowbucket->next_item;
 	}
 	if (nowbucket != NULL) {
-		SSDHashBucket *newitem = malloc(sizeof(SSDHashBucket));
+		SSDHashBucket *newitem = (SSDHashBucket*)malloc(sizeof(SSDHashBucket));
 		newitem->hash_key = *ssd_tag;
 		newitem->ssd_id = ssd_id;
 		newitem->next_item = NULL;
