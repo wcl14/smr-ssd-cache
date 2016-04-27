@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #include "main.h"
 #include "ssd-cache.h"
@@ -15,6 +16,7 @@
 
 int main()
 {
+//    char trace_file_path[]="/github/smr-ssd-cache/trace_for_test.txt";
     char trace_file_path[]="/Users/wangchunling/Software/code/smr-test/smr-ssd-cache/trace_for_test.txt";
 
 	initSSD();

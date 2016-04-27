@@ -55,7 +55,7 @@ extern SSDBufferStrategyControl *ssd_buffer_strategy_control;
 
 extern void initSSDBuffer();
 extern void read_block(off_t offset, char* ssd_buffer);
-extern void read_block(off_t offset, char* ssd_buffer);
+extern void write_block(off_t offset, char* ssd_buffer);
 //extern int read(unsigned offset);
 //extern int write(unsigned offset);
 

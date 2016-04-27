@@ -4,7 +4,7 @@
 
 typedef struct
 {
-        unsigned        offset;
+        unsigned long       offset;
 } SSDTag;
 
 typedef struct
@@ -28,7 +28,7 @@ typedef struct SSDHashBucket
 
 typedef struct
 {
-	long		n_usedssd;
+	unsigned long		n_usedssd;
 	long		first_usedssd;		// Head of list of used ssds
 	long		last_usedssd;		// Tail of list of used ssds
 } SSDStrategyControl;
@@ -38,8 +38,8 @@ extern char             *ssd_blocks;
 extern SSDStrategyControl *ssd_strategy_control;
 extern SSDHashBucket	*ssd_hashtable;
 
-#define GetSSDblockFromId(ssd_id) ((void *) (ssd_blocks + ((unsigned) (ssd_id)) * SSD_SIZE))
-#define GetSSDHashBucket(hash_code) ((SSDHashBucket *) (ssd_hashtable + (unsigned) (hash_code)))
+#define GetSSDblockFromId(ssd_id) ((void *) (ssd_blocks + ((long) (ssd_id)) * SSD_SIZE))
+#define GetSSDHashBucket(hash_code) ((SSDHashBucket *) (ssd_hashtable + (unsigned long) (hash_code)))
 
 extern int smrread(int smr_fd, char* buffer, size_t size, off_t offset);
 extern int smrwrite(int smr_fd, char* buffer, size_t size, off_t offset);
@@ -60,4 +60,4 @@ extern unsigned	long interval_time;
 extern pthread_mutex_t free_ssd_mutex;
 extern pthread_mutex_t inner_ssd_hdr_mutex;
 extern pthread_mutex_t inner_ssd_hash_mutex;
-
+extern void initSSD();

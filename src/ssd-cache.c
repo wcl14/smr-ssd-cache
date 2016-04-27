@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <memory.h>
+#include <unistd.h>
 #include "ssd-cache.h"
 #include "smr-simulator.h"
 #include "strategy.h"
+#include "ssd_buf_table.h"
 
 static volatile void flushSSDBuffer(SSDBufferDesc *ssd_buf_hdr);
 static SSDBufferDesc * SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool *found);

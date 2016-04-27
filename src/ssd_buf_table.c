@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "ssd-cache.h"
 
@@ -51,7 +52,7 @@ long ssdbuftableInsert(SSDBufferTag *ssd_buf_tag, unsigned long hash_code, long 
 		nowbucket = nowbucket->next_item;
 	}
 	if (nowbucket != NULL) {
-		SSDBufferHashBucket *newitem = malloc(sizeof(SSDBufferHashBucket));
+		SSDBufferHashBucket *newitem = (SSDBufferHashBucket*)malloc(sizeof(SSDBufferHashBucket));
 		newitem->hash_key = *ssd_buf_tag;
 		newitem->ssd_buf_id = ssd_buf_id;
 		newitem->next_item = NULL;

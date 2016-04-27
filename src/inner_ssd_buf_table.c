@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "smr-simulator.h"
 #include "ssd-cache.h"
@@ -26,7 +27,7 @@ unsigned long ssdtableHashcode(SSDTag *ssd_tag)
 long ssdtableLookup(SSDTag *ssd_tag, unsigned long hash_code)
 {
 	if (DEBUG)
-		printf("[INFO] Lookup ssd_tag: %u\n",ssd_tag->offset);
+		printf("[INFO] Lookup ssd_tag: %lu\n",ssd_tag->offset);
 	SSDHashBucket *nowbucket = GetSSDHashBucket(hash_code);
 	while (nowbucket != NULL) {
 	//	printf("nowbucket->buf_id = %u %u %u\n", nowbucket->hash_key.rel.database, nowbucket->hash_key.rel.relation, nowbucket->hash_key.block_num);
@@ -53,7 +54,7 @@ long ssdtableInsert(SSDTag *ssd_tag, unsigned long hash_code, long ssd_id)
 		nowbucket = nowbucket->next_item;
 	}
 	if (nowbucket != NULL) {
-		SSDHashBucket *newitem = malloc(sizeof(SSDHashBucket));
+		SSDHashBucket *newitem = (SSDHashBucket*)malloc(sizeof(SSDHashBucket));
 		newitem->hash_key = *ssd_tag;
 		newitem->ssd_id = ssd_id;
 		newitem->next_item = NULL;
