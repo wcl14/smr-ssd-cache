@@ -28,9 +28,12 @@ unsigned long NSSDCLEAN = 2;
 //char smr_device[100] = "/dev/sdb1";
 //char ssd_device[100] = "/dev/";
 //char inner_ssd_device[100] = "/dev/";
-char smr_device[] = "/github/smr-ssd-cache/smr";
-char ssd_device[] = "/github/smr-ssd-cache/ssd";
-char inner_ssd_device[] = "/github/smr-ssd-cache/inner_ssd";
+//char smr_device[] = "/github/smr-ssd-cache/smr";
+//char ssd_device[] = "/github/smr-ssd-cache/ssd";
+//char inner_ssd_device[] = "/github/smr-ssd-cache/inner_ssd";
+char smr_device[] = "/Users/wangchunling/Software/code/smr-test/smr-ssd-cache/src/smr";
+char ssd_device[] = "/Users/wangchunling/Software/code/smr-test/smr-ssd-cache/src/ssd";
+char inner_ssd_device[] = "/Users/wangchunling/Software/code/smr-test/smr-ssd-cache/src/inner_ssd";
 
 int 		    smr_fd;
 int 		    ssd_fd;

@@ -9,7 +9,7 @@
 void trace_to_iocall(char* trace_file_path) {
 	FILE* trace;
 	if((trace = fopen(trace_file_path, "rt")) == NULL) {
-		printf("Fail to open the trace file!");
+		printf("[ERROR] trace_to_iocall():--------Fail to open the trace file!");
 		exit(1);
 	}
 	double time_prv, time_cur;
@@ -33,16 +33,17 @@ void trace_to_iocall(char* trace_file_path) {
 		if(strstr(write_or_read, "W")) {
             ssd_buffer = (char *)malloc(sizeof(char)*BLCKSZ);
             for (i=0; i<BLCKSZ; i++)
-
                 ssd_buffer[i] = '1';
             while (size > 0 ) {
-                printf("wirte offset=%lu\n", offset);
+//                if (DEBUG)
+                    printf("[INFO] trace_to_iocall():--------wirte offset=%lu\n", offset);
 			    write_block(offset, ssd_buffer);
                 offset += BLCKSZ;
                 size -= BLCKSZ;
             }
 		} else if(strstr(write_or_read, "R")) {
-            printf("read offset=%lu\n", offset);
+//            if (DEBUG)
+                printf("[INFO] trace_to_iocall():--------read offset=%lu\n", offset);
 			read_block(offset, ssd_buffer); 
 		}
 		time_prv = time_cur;

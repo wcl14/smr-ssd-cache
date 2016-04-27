@@ -16,7 +16,8 @@
 
 int main()
 {
-    char trace_file_path[]="/github/smr-ssd-cache/trace_for_test.txt";
+//    char trace_file_path[]="/github/smr-ssd-cache/trace_for_test.txt";
+    char trace_file_path[]="/Users/wangchunling/Software/code/smr-test/smr-ssd-cache/trace_for_test.txt";
 
 	initSSD();
     initSSDBuffer();

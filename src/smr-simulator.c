@@ -105,7 +105,6 @@ int smrwrite(int smr_fd, char* buffer, size_t size, off_t offset)
 		ssd_id = ssdtableLookup(&ssd_tag, ssd_hash);
 		if (ssd_id >= 0) {
 			ssd_hdr = &ssd_descriptors[ssd_id];
-            printf("ssd_id=%ld\n", ssd_id);
 		}
 		else {
 			ssd_hdr = getStrategySSD();
@@ -151,15 +150,16 @@ static void* freeStrategySSD()
 	while (1) {
 		usleep(100);
 		interval_time++;
-		if (interval_time > INTERVALTIMELIMIT || ssd_strategy_control->n_usedssd >= NSSDLIMIT) {
-			printf("interval_time=%ld\n", interval_time);
-            printf("ssd_strategy_control->n_usedssd=%ld ssd_strategy_control->first_usedssd=%ld\n", ssd_strategy_control->n_usedssd, ssd_strategy_control->first_usedssd);
+		if ((interval_time > INTERVALTIMELIMIT && ssd_strategy_control->n_usedssd >= NSSDCLEAN)|| ssd_strategy_control->n_usedssd >= NSSDLIMIT) {
+            if (DEBUG) {
+			    printf("[INFO] freeStrategySSD():--------interval_time=%ld\n", interval_time);
+                printf("[INFO] freeStrategySSD():--------ssd_strategy_control->n_usedssd=%lu ssd_strategy_control->first_usedssd=%ld\n", ssd_strategy_control->n_usedssd, ssd_strategy_control->first_usedssd);
+            }
             //allocatelock
             pthread_mutex_lock(&free_ssd_mutex);
 			interval_time = 0;
 			for (i = ssd_strategy_control->first_usedssd; i < ssd_strategy_control->first_usedssd + NSSDCLEAN; i++) {
 				if (ssd_descriptors[i%NSSDs].ssd_flag & SSD_VALID) {
-                    printf("%d\n", i%NSSDs);
 					flushSSD(&ssd_descriptors[i%NSSDs]);
 				}
 			}
@@ -167,7 +167,8 @@ static void* freeStrategySSD()
 			ssd_strategy_control->n_usedssd -= NSSDCLEAN;
 			//releaselock
             pthread_mutex_unlock(&free_ssd_mutex);
-            printf("after clean\n");
+            if (DEBUG) 
+                printf("[INFO] freeStrategySSD():--------after clean\n");
 		}
 	}
 }
@@ -203,9 +204,7 @@ static volatile void flushSSD(SSDDesc *ssd_hdr)
 			bandused[Offset] = 1;
 		    long tmp_hash = ssdtableHashcode(&ssd_descriptors[i%NSSDs].ssd_tag);
 		    long tmp_id = ssdtableLookup(&ssd_descriptors[i%NSSDs].ssd_tag, tmp_hash);
-            printf("tmp_id=%ld\n", tmp_id);
 		    ssdtableDelete(&ssd_descriptors[i%NSSDs].ssd_tag, ssdtableHashcode(&ssd_descriptors[i%NSSDs].ssd_tag));
-            printf("after ssdtableDelete\n");
 			ssd_descriptors[i%NSSDs].ssd_flag = 0;
 		}
 	}

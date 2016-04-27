@@ -27,7 +27,7 @@ unsigned long ssdtableHashcode(SSDTag *ssd_tag)
 long ssdtableLookup(SSDTag *ssd_tag, unsigned long hash_code)
 {
 	if (DEBUG)
-		printf("[INFO] Lookup ssd_tag: %u\n",ssd_tag->offset);
+		printf("[INFO] Lookup ssd_tag: %lu\n",ssd_tag->offset);
 	SSDHashBucket *nowbucket = GetSSDHashBucket(hash_code);
 	while (nowbucket != NULL) {
 	//	printf("nowbucket->buf_id = %u %u %u\n", nowbucket->hash_key.rel.database, nowbucket->hash_key.rel.relation, nowbucket->hash_key.block_num);
