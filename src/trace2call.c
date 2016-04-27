@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "ssd-cache.h"
-#include "smr-simulator.h"
 #include <string.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include "ssd-cache.h"
+#include "smr-simulator.h"
 
 void trace_to_iocall(char* trace_file_path) {
 	FILE* trace;
@@ -12,8 +12,10 @@ void trace_to_iocall(char* trace_file_path) {
 		printf("[ERROR] trace_to_iocall():--------Fail to open the trace file!");
 		exit(1);
 	}
-	double time_prv, time_cur;
-	int time_diff;
+	double time, time_begin, time_now;
+    struct timeval tv_begin, tv_now;
+    struct timezone tz_begin, tz_now;
+	long time_diff;
 	char action;
 	char write_or_read[100];
 	off_t offset;
@@ -21,11 +23,19 @@ void trace_to_iocall(char* trace_file_path) {
 	char* ssd_buffer;
 	bool is_first_call = 1;
 	int i;
+
+    gettimeofday(&tv_begin, &tz_begin);
+    time_begin = tv_begin.tv_sec + tv_begin.tv_usec/1000000.0;
     while(!feof(trace)) {
-		fscanf(trace, "%lf %c %s %lu %lu", &time_cur, &action, write_or_read, &offset, &size);
+		fscanf(trace, "%lf %c %s %lu %lu", &time, &action, write_or_read, &offset, &size);
+        gettimeofday(&tv_now, &tz_now);
+//        if (DEBUG)
+            printf("[INFO] trace_to_iocall():--------now time = %lf\n", time_now-time_begin);
+        time_now = tv_now.tv_sec + tv_now.tv_usec/1000000.0;
 		if (!is_first_call) {
-			time_diff = (time_cur - time_prv) * 1000000;
-			usleep(time_diff);
+			time_diff = (time - (time_now - time_begin)) * 1000000;
+			if (time_diff > 0)
+                usleep(time_diff);
 		} else {
 			is_first_call = 0;
 		}
@@ -46,8 +56,12 @@ void trace_to_iocall(char* trace_file_path) {
                 printf("[INFO] trace_to_iocall():--------read offset=%lu\n", offset);
 			read_block(offset, ssd_buffer); 
 		}
-		time_prv = time_cur;
 	}
+
+    gettimeofday(&tv_now, &tz_now);
+    time_now = tv_now.tv_sec + tv_now.tv_usec/1000000.0;
+    printf("total run time (s) = %lf\n", time_now - time_begin);
+
 	fclose(trace);
 	
 }
