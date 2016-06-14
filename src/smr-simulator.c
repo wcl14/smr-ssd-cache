@@ -10,7 +10,7 @@
 
 static SSDDesc *getStrategySSD();
 static void* freeStrategySSD();
-static volatile void flushSSD(SSDDesc *ssd_hdr);
+static volatile  void* flushSSD(SSDDesc *ssd_hdr);
 static unsigned long GetSMRBandNumFromSSD(SSDDesc *ssd_hdr);
 static off_t GetSMROffsetInBandFromSSD(SSDDesc *ssd_hdr);
 
@@ -173,7 +173,7 @@ static void* freeStrategySSD()
 	}
 }
 
-static volatile void flushSSD(SSDDesc *ssd_hdr)
+static volatile void* flushSSD(SSDDesc *ssd_hdr)
 {
 	long i;
     int returnCode;

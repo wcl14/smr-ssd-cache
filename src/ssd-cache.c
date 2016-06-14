@@ -7,7 +7,7 @@
 #include "strategy.h"
 #include "ssd_buf_table.h"
 
-static volatile void flushSSDBuffer(SSDBufferDesc *ssd_buf_hdr);
+static volatile void* flushSSDBuffer(SSDBufferDesc *ssd_buf_hdr);
 static SSDBufferDesc * SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool *found);
 static SSDBufferDesc * getSSDStrategyBuffer(SSDEvictionStrategy strategy);
 
@@ -39,7 +39,7 @@ void initSSDBuffer()
 	memset(ssd_buffer_blocks, 0, SSD_BUFFER_SIZE*NSSDBuffers);
 }
 
-static volatile void flushSSDBuffer(SSDBufferDesc *ssd_buf_hdr)
+static volatile void* flushSSDBuffer(SSDBufferDesc *ssd_buf_hdr)
 {
 	char	ssd_buffer[SSD_BUFFER_SIZE];
 	int 	returnCode;
