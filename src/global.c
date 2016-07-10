@@ -25,15 +25,15 @@ size_t BNDSZ = 8*1024;
 unsigned long INTERVALTIMELIMIT = 1000;
 unsigned long NSSDLIMIT = 4;
 unsigned long NSSDCLEAN = 2;
-char smr_device[100] = "/dev/sdc2";
-char ssd_device[100] = "/dev/sda1";
-char inner_ssd_device[100] = "/dev/hioa2";
+//char smr_device[100] = "/dev/sdc2";
+//char ssd_device[100] = "/dev/sda1";
+//char inner_ssd_device[100] = "/dev/hioa2";
 //char smr_device[] = "/github/smr-ssd-cache/smr";
 //char ssd_device[] = "/github/smr-ssd-cache/ssd";
 //char inner_ssd_device[] = "/github/smr-ssd-cache/inner_ssd";
-//char smr_device[] = "/Users/wangchunling/Software/code/smr-test/smr-ssd-cache/src/smr";
-//char ssd_device[] = "/Users/wangchunling/Software/code/smr-test/smr-ssd-cache/src/ssd";
-//char inner_ssd_device[] = "/Users/wangchunling/Software/code/smr-test/smr-ssd-cache/src/inner_ssd";
+char smr_device[] = "/Users/wangchunling/Software/code/smr-test/smr-ssd-cache/src/smr";
+char ssd_device[] = "/Users/wangchunling/Software/code/smr-test/smr-ssd-cache/src/ssd";
+char inner_ssd_device[] = "/Users/wangchunling/Software/code/smr-test/smr-ssd-cache/src/inner_ssd";
 
 int 		    smr_fd;
 int 		    ssd_fd;
@@ -45,7 +45,6 @@ pthread_mutex_t inner_ssd_hdr_mutex;
 pthread_mutex_t inner_ssd_hash_mutex;
 
 SSDBufferDesc	*ssd_buffer_descriptors;
-char		    *ssd_buffer_blocks;
 SSDBufferStrategyControl	*ssd_buffer_strategy_control;
 SSDBufferHashBucket	        *ssd_buffer_hashtable;
 

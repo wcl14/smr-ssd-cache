@@ -10,6 +10,7 @@
 static volatile void* flushSSDBuffer(SSDBufferDesc *ssd_buf_hdr);
 static SSDBufferDesc * SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool *found);
 static SSDBufferDesc * getSSDStrategyBuffer(SSDEvictionStrategy strategy);
+static void * hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy);
 
 /*
  * init buffer hash table, strategy_control, buffer, work_mem
@@ -19,8 +20,11 @@ void initSSDBuffer()
 	initSSDBufTable(NSSDBufTables);
 
 	ssd_buffer_strategy_control = (SSDBufferStrategyControl *) malloc(sizeof(SSDBufferStrategyControl));
+    ssd_buffer_strategy_control->n_usedssd = 0;
 	ssd_buffer_strategy_control->first_freessd = 0;
 	ssd_buffer_strategy_control->last_freessd = NSSDBuffers - 1;
+    ssd_buffer_strategy_control->first_lru = -1;
+    ssd_buffer_strategy_control->last_lru = -1;
 	ssd_buffer_strategy_control->next_victimssd = 0;
 
 	ssd_buffer_descriptors = (SSDBufferDesc *) malloc(sizeof(SSDBufferDesc)*NSSDBuffers);
@@ -32,11 +36,10 @@ void initSSDBuffer()
 		ssd_buf_hdr->ssd_buf_id = i;
 		ssd_buf_hdr->usage_count = 0;
 		ssd_buf_hdr->next_freessd = i + 1;
+        ssd_buf_hdr->next_lru = -1;
+        ssd_buf_hdr->last_lru = -1;
 	}
 	ssd_buffer_descriptors[NSSDBuffers - 1].next_freessd = -1;
-
-	ssd_buffer_blocks = (char *) malloc(SSD_BUFFER_SIZE*NSSDBuffers);
-	memset(ssd_buffer_blocks, 0, SSD_BUFFER_SIZE*NSSDBuffers);
 }
 
 static volatile void* flushSSDBuffer(SSDBufferDesc *ssd_buf_hdr)
@@ -66,10 +69,13 @@ static SSDBufferDesc * SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool *found)
         if (ssd_buf_id >= 0) {
                 ssd_buf_hdr = &ssd_buffer_descriptors[ssd_buf_id];
                 *found = 1;
+                hitInSSDBuffer(ssd_buf_hdr, LRU);
+                //hitInSSDBuffer(ssd_buf_hdr, CLOCK);
                 return ssd_buf_hdr;
         }
 
-	ssd_buf_hdr = getSSDStrategyBuffer(CLOCK);
+	ssd_buf_hdr = getSSDStrategyBuffer(LRU);
+	//ssd_buf_hdr = getSSDStrategyBuffer(CLOCK);
 
         unsigned char old_flag = ssd_buf_hdr->ssd_buf_flag;
         SSDBufferTag old_tag = ssd_buf_hdr->ssd_buf_tag;
@@ -94,8 +100,16 @@ static SSDBufferDesc * getSSDStrategyBuffer(SSDEvictionStrategy strategy)
 {
 	if (strategy == CLOCK)
 		return getCLOCKBuffer();
+    else if (strategy == LRU)
+        return getLRUBuffer();
 	else if (strategy == LRUOfBand)
 		return getLRUOfBandBuffer(); 
+}
+
+static void * hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy)
+{
+    if (strategy == LRU)
+        hitInLRUBuffer(ssd_buf_hdr);
 }
 
 /*
