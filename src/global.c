@@ -34,6 +34,7 @@ unsigned long NSSDCLEAN = 2;
 char smr_device[] = "/Users/wangchunling/Software/code/smr-test/smr-ssd-cache/src/smr";
 char ssd_device[] = "/Users/wangchunling/Software/code/smr-test/smr-ssd-cache/src/ssd";
 char inner_ssd_device[] = "/Users/wangchunling/Software/code/smr-test/smr-ssd-cache/src/inner_ssd";
+SSDEvictionStrategy EvictStrategy = LRU;
 
 int 		    smr_fd;
 int 		    ssd_fd;
@@ -53,3 +54,4 @@ SSDStrategyControl	*ssd_strategy_control;
 SSDDesc		*ssd_descriptors;
 char		*ssd_blocks;
 SSDHashBucket	*ssd_hashtable;
+

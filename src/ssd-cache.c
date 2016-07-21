@@ -4,11 +4,13 @@
 #include <unistd.h>
 #include "ssd-cache.h"
 #include "smr-simulator.h"
-#include "strategy.h"
 #include "ssd_buf_table.h"
+#include "clock.h"
+#include "lru.h"
 
 static volatile void* flushSSDBuffer(SSDBufferDesc *ssd_buf_hdr);
 static SSDBufferDesc * SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool *found);
+static void * initStrategySSDBuffer(SSDEvictionStrategy strategy);
 static SSDBufferDesc * getSSDStrategyBuffer(SSDEvictionStrategy strategy);
 static void * hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy);
 
@@ -23,9 +25,6 @@ void initSSDBuffer()
     ssd_buffer_strategy_control->n_usedssd = 0;
 	ssd_buffer_strategy_control->first_freessd = 0;
 	ssd_buffer_strategy_control->last_freessd = NSSDBuffers - 1;
-    ssd_buffer_strategy_control->first_lru = -1;
-    ssd_buffer_strategy_control->last_lru = -1;
-	ssd_buffer_strategy_control->next_victimssd = 0;
 
 	ssd_buffer_descriptors = (SSDBufferDesc *) malloc(sizeof(SSDBufferDesc)*NSSDBuffers);
 	SSDBufferDesc *ssd_buf_hdr;
@@ -34,12 +33,11 @@ void initSSDBuffer()
 	for (i = 0; i < NSSDBuffers; ssd_buf_hdr++, i++) {
 		ssd_buf_hdr->ssd_buf_flag = 0;
 		ssd_buf_hdr->ssd_buf_id = i;
-		ssd_buf_hdr->usage_count = 0;
 		ssd_buf_hdr->next_freessd = i + 1;
-        ssd_buf_hdr->next_lru = -1;
-        ssd_buf_hdr->last_lru = -1;
 	}
 	ssd_buffer_descriptors[NSSDBuffers - 1].next_freessd = -1;
+
+    initStrategySSDBuffer(EvictStrategy);
 }
 
 static volatile void* flushSSDBuffer(SSDBufferDesc *ssd_buf_hdr)
@@ -58,6 +56,8 @@ static volatile void* flushSSDBuffer(SSDBufferDesc *ssd_buf_hdr)
 		printf("[ERROR] flushSSDBuffer():-------write to smr: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, ssd_buf_hdr->ssd_buf_tag.offset);
 		exit(-1);
 	}
+
+    return NULL;
 }
 
 static SSDBufferDesc * SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool *found)
@@ -69,13 +69,11 @@ static SSDBufferDesc * SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool *found)
         if (ssd_buf_id >= 0) {
                 ssd_buf_hdr = &ssd_buffer_descriptors[ssd_buf_id];
                 *found = 1;
-                hitInSSDBuffer(ssd_buf_hdr, LRU);
-                //hitInSSDBuffer(ssd_buf_hdr, CLOCK);
+                hitInSSDBuffer(ssd_buf_hdr, EvictStrategy);
                 return ssd_buf_hdr;
         }
 
-	ssd_buf_hdr = getSSDStrategyBuffer(LRU);
-	//ssd_buf_hdr = getSSDStrategyBuffer(CLOCK);
+	ssd_buf_hdr = getSSDStrategyBuffer(EvictStrategy);
 
         unsigned char old_flag = ssd_buf_hdr->ssd_buf_flag;
         SSDBufferTag old_tag = ssd_buf_hdr->ssd_buf_tag;
@@ -96,19 +94,27 @@ static SSDBufferDesc * SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool *found)
         return ssd_buf_hdr;
 }
 
+static void * initStrategySSDBuffer(SSDEvictionStrategy strategy)
+{
+    if (strategy == CLOCK)
+        initSSDBufferForClock();
+    else if (strategy == LRU)
+        initSSDBufferForLRU();
+}
+
 static SSDBufferDesc * getSSDStrategyBuffer(SSDEvictionStrategy strategy)
 {
 	if (strategy == CLOCK)
 		return getCLOCKBuffer();
     else if (strategy == LRU)
         return getLRUBuffer();
-	else if (strategy == LRUOfBand)
-		return getLRUOfBandBuffer(); 
 }
 
 static void * hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy)
 {
-    if (strategy == LRU)
+    if (strategy == CLOCK)
+        hitInCLOCKBuffer(ssd_buf_hdr);
+    else if (strategy == LRU)
         hitInLRUBuffer(ssd_buf_hdr);
 }
 

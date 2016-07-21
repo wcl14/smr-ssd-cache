@@ -1,5 +1,5 @@
-all: global.o ssd_buf_table.o ssd-cache.o inner_ssd_buf_table.o smr-simulator.o strategy.o trace2call.o main.o
-	gcc -o smr-ssd-cache global.o ssd_buf_table.o ssd-cache.o inner_ssd_buf_table.o smr-simulator.o strategy.o trace2call.o main.o -pthread
+all: global.o ssd_buf_table.o ssd-cache.o inner_ssd_buf_table.o smr-simulator.o trace2call.o main.o clock.o lru.o
+	gcc -o smr-ssd-cache global.o ssd_buf_table.o ssd-cache.o inner_ssd_buf_table.o smr-simulator.o trace2call.o main.o clock.o lru.o -pthread
 
 global.o:
 	gcc -c global.c -o global.o
@@ -11,12 +11,14 @@ inner_ssd_buf_table.o:
 	gcc -c inner_ssd_buf_table.c -o inner_ssd_buf_table.o
 smr-simulator.o:
 	gcc -c smr-simulator.c -o smr-simulator.o -pthread
-strategy.o:
-	gcc -c strategy.c -o strategy.o
 trace2call.o:
 	gcc -c trace2call.c -o trace2call.o
 main.o:
 	gcc -c main.c -o main.o
+clock.o:
+	gcc -c clock.c -o clock.o
+lru.o:
+	gcc -c lru.c -o lru.o
 
 clean:
-	rm smr-ssd-cache global.o ssd_buf_table.o ssd-cache.o inner_ssd_buf_table.o smr-simulator.o strategy.o trace2call.o main.o
+	rm smr-ssd-cache global.o ssd_buf_table.o ssd-cache.o inner_ssd_buf_table.o smr-simulator.o trace2call.o main.o clock.o lru.o
