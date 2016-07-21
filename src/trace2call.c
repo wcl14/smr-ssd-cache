@@ -4,7 +4,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include "ssd-cache.h"
-#include "smr-simulator.h"
+#include "smr-simulator/smr-simulator.h"
 
 void trace_to_iocall(char* trace_file_path) {
 	FILE* trace;

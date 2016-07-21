@@ -11,7 +11,7 @@
 
 #include "main.h"
 #include "ssd-cache.h"
-#include "smr-simulator.h"
+#include "smr-simulator/smr-simulator.h"
 #include "trace2call.h"
 
 int main()

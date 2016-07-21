@@ -1,5 +1,5 @@
 #include "ssd-cache.h"
-#include "smr-simulator.h"
+#include "smr-simulator/smr-simulator.h"
 #include "main.h"
 
 //unsigned long NSSDBuffers = 10000000;

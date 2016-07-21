@@ -3,10 +3,10 @@
 #include <memory.h>
 #include <unistd.h>
 #include "ssd-cache.h"
-#include "smr-simulator.h"
+#include "smr-simulator/smr-simulator.h"
 #include "ssd_buf_table.h"
-#include "clock.h"
-#include "lru.h"
+#include "strategy/clock.h"
+#include "strategy/lru.h"
 
 static volatile void* flushSSDBuffer(SSDBufferDesc *ssd_buf_hdr);
 static SSDBufferDesc * SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool *found);
