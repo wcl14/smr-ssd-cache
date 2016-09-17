@@ -1,3 +1,6 @@
+#ifndef SMR_SSD_CACHE_SSD_CACHE_H
+#define SMR_SSD_CACHE_SSD_CACHE_H
+
 #define DEBUG 0
 /* ---------------------------ssd cache---------------------------- */
 
@@ -63,3 +66,5 @@ extern char	smr_device[100];
 extern int 	smr_fd;
 extern int 	ssd_fd;
 extern SSDEvictionStrategy EvictStrategy;
+
+#endif

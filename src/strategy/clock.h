@@ -1,3 +1,6 @@
+#ifndef SMR_SSD_CACHE_CLOCK_H
+#define SMR_SSD_CACHE_CLOCK_H
+
 #define DEBUG 0
 /* ---------------------------clock---------------------------- */
 
@@ -18,3 +21,5 @@ SSDBufferStrategyControlForClock *ssd_buffer_strategy_control_for_clock;
 extern void initSSDBufferForClock();
 extern SSDBufferDesc *getCLOCKBuffer();
 extern void *hitInCLOCKBuffer(SSDBufferDesc *);
+
+#endif

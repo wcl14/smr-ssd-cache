@@ -4,7 +4,7 @@
 #include <pthread.h>
 #include <memory.h>
 
-#include "../ssd-cache.h"
+#include "ssd-cache.h"
 #include "smr-simulator.h"
 #include "inner_ssd_buf_table.h"
 

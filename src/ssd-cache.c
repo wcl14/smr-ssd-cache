@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <unistd.h>
+
 #include "ssd-cache.h"
 #include "smr-simulator/smr-simulator.h"
 #include "ssd_buf_table.h"
@@ -182,4 +183,3 @@ void write_block(off_t offset, char* ssd_buffer)
 	}
         ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_VALID | SSD_BUF_DIRTY;
 }
-
