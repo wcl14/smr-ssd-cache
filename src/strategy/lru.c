@@ -39,6 +39,7 @@ static volatile void* addToLRUHead(SSDBufferDescForLRU *ssd_buf_hdr_for_lru)
         ssd_buffer_descriptors_for_lru[ssd_buffer_strategy_control_for_lru->first_lru].last_lru = ssd_buf_hdr_for_lru->ssd_buf_id;
         ssd_buffer_strategy_control_for_lru->first_lru = ssd_buf_hdr_for_lru->ssd_buf_id;
     }
+    ssd_buffer_strategy_control->n_usedssd ++;
 
     return NULL;
 }
@@ -55,6 +56,7 @@ static volatile void* deleteFromLRU(SSDBufferDescForLRU *ssd_buf_hdr_for_lru)
     } else {
         ssd_buffer_strategy_control_for_lru->last_lru = ssd_buf_hdr_for_lru->last_lru;
     }
+    ssd_buffer_strategy_control->n_usedssd --;
 
     return NULL;
 }
@@ -78,7 +80,6 @@ SSDBufferDesc *getLRUBuffer()
 		ssd_buffer_strategy_control->first_freessd = ssd_buf_hdr->next_freessd;
 		ssd_buf_hdr->next_freessd = -1;
         addToLRUHead(ssd_buf_hdr_for_lru);
-        ssd_buffer_strategy_control->n_usedssd ++;
         return ssd_buf_hdr;
     }
 
