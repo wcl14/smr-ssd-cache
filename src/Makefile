@@ -1,24 +1,48 @@
-all: global.o ssd_buf_table.o ssd-cache.o smr-simulator/inner_ssd_buf_table.o smr-simulator/smr-simulator.o trace2call.o main.o strategy/clock.o strategy/lru.o
-	gcc -o smr-ssd-cache global.o ssd_buf_table.o ssd-cache.o smr-simulator/inner_ssd_buf_table.o smr-simulator/smr-simulator.o trace2call.o main.o strategy/clock.o strategy/lru.o -pthread
+CC = gcc
 
-global.o:
-	gcc -c global.c -o global.o
-ssd_buf_table.o:
-	gcc -c ssd_buf_table.c -o ssd_buf_table.o
-ssd-cahce.o:
-	gcc -c ssd-cache.c -o ssd-cache.o
-inner_ssd_buf_table.o:
-	gcc -c smr-simulator/inner_ssd_buf_table.c -o smr-simulator/inner_ssd_buf_table.o
-smr-simulator.o:
-	gcc -c smr-simulator/smr-simulator.c -o smr-simulator/smr-simulator.o -pthread
-trace2call.o:
-	gcc -c trace2call.c -o trace2call.o
-main.o:
-	gcc -c main.c -o main.o
-clock.o:
-	gcc -c strategy/clock.c -o strategy/clock.o
-lru.o:
-	gcc -c strategy/lru.c -o strategy/lru.o
+ifndef SMR_SSD_CACHE_DIR
+SMR_SSD_CACHE_DIR = .
+endif
+
+CFLAGS += -Wall -pthread
+CPPFLAGS += -I$(SMR_SSD_CACHE_DIR) -I$(SMR_SSD_CACHE_DIR)/smr-simulator -I$(SMR_SSD_CACHE_DIR)/strategy
+
+RM = rm -rf
+OBJS = global.o ssd_buf_table.o ssd-cache.o inner_ssd_buf_table.o smr-simulator.o trace2call.o main.o clock.o lru.o
+
+all: $(OBJS) smr-ssd-cache
+	@echo 'Successfully built smr-ssd-cache...'
+
+smr-ssd-cache:
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(OBJS) -o $@
+
+global.o: global.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $?
+
+ssd_buf_table.o: ssd_buf_table.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $?
+
+ssd-cahce.o: sdd-cache.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $?
+
+inner_ssd_buf_table.o: smr-simulator/inner_ssd_buf_table.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $?
+
+smr-simulator.o: smr-simulator/smr-simulator.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $?
+
+trace2call.o: trace2call.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $?
+
+main.o: main.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $?
+
+clock.o: strategy/clock.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $?
+
+lru.o: strategy/lru.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $?
 
 clean:
-	rm smr-ssd-cache global.o ssd_buf_table.o ssd-cache.o smr-simulator/inner_ssd_buf_table.o smr-simulator/smr-simulator.o trace2call.o main.o strategy/clock.o strategy/lru.o
+	$(RM) *.o
+	$(RM) $(SMR_SSD_CACHE_DIR)/smr-ssd-cache

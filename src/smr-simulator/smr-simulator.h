@@ -1,3 +1,6 @@
+#ifndef SMR_SSD_CACHE_SMR_SIMULATOR_H
+#define SMR_SSD_CACHE_SMR_SIMULATOR_H
+
 #define DEBUG 0
 /* ---------------------------smr simulator---------------------------- */
 #include <pthread.h>
@@ -61,3 +64,5 @@ extern pthread_mutex_t free_ssd_mutex;
 extern pthread_mutex_t inner_ssd_hdr_mutex;
 extern pthread_mutex_t inner_ssd_hash_mutex;
 extern void initSSD();
+
+#endif
