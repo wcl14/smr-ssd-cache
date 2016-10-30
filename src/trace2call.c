@@ -40,21 +40,21 @@ void trace_to_iocall(char* trace_file_path) {
       is_first_call = 0;
     }
     size = size*1024;
-    if(strstr(write_or_read, "W")) {
-      ssd_buffer = (char *)malloc(sizeof(char)*BLCKSZ);
-      for (i=0; i<BLCKSZ; i++)
-        ssd_buffer[i] = '1';
-      while (size > 0 ) {
+    ssd_buffer = (char *)malloc(sizeof(char)*BLCKSZ);
+    for (i=0; i<BLCKSZ; i++)
+      ssd_buffer[i] = '1';
+    while (size > 0 ) {
+      if(strstr(write_or_read, "W")) {
         //                if (DEBUG)
         printf("[INFO] trace_to_iocall():--------wirte offset=%lu\n", offset);
         write_block(offset, ssd_buffer);
-        offset += BLCKSZ;
-        size -= BLCKSZ;
+      } else if(strstr(write_or_read, "R")) {
+        //            if (DEBUG)
+        printf("[INFO] trace_to_iocall():--------read offset=%lu\n", offset);
+        read_block(offset, ssd_buffer); 
       }
-    } else if(strstr(write_or_read, "R")) {
-      //            if (DEBUG)
-      printf("[INFO] trace_to_iocall():--------read offset=%lu\n", offset);
-      read_block(offset, ssd_buffer); 
+      offset += BLCKSZ;
+      size -= BLCKSZ;
     }
   }
 
