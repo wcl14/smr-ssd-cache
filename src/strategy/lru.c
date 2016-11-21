@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "ssd-cache.h"
-#include "smr-simulator/smr-simulator.h"
+#include "../ssd-cache.h"
+#include "../smr-simulator/smr-simulator.h"
 #include "lru.h"
 
 static volatile void* addToLRUHead(SSDBufferDescForLRU *ssd_buf_hdr_for_lru);
@@ -26,6 +26,7 @@ void initSSDBufferForLRU()
         ssd_buf_hdr_for_lru->next_lru = -1;
         ssd_buf_hdr_for_lru->last_lru = -1;
 	}
+	flush_fifo_times = 0 ;
 }
 
 static volatile void* addToLRUHead(SSDBufferDescForLRU *ssd_buf_hdr_for_lru)
@@ -39,7 +40,6 @@ static volatile void* addToLRUHead(SSDBufferDescForLRU *ssd_buf_hdr_for_lru)
         ssd_buffer_descriptors_for_lru[ssd_buffer_strategy_control_for_lru->first_lru].last_lru = ssd_buf_hdr_for_lru->ssd_buf_id;
         ssd_buffer_strategy_control_for_lru->first_lru = ssd_buf_hdr_for_lru->ssd_buf_id;
     }
-    ssd_buffer_strategy_control->n_usedssd ++;
 
     return NULL;
 }
@@ -56,7 +56,6 @@ static volatile void* deleteFromLRU(SSDBufferDescForLRU *ssd_buf_hdr_for_lru)
     } else {
         ssd_buffer_strategy_control_for_lru->last_lru = ssd_buf_hdr_for_lru->last_lru;
     }
-    ssd_buffer_strategy_control->n_usedssd --;
 
     return NULL;
 }
@@ -80,9 +79,11 @@ SSDBufferDesc *getLRUBuffer()
 		ssd_buffer_strategy_control->first_freessd = ssd_buf_hdr->next_freessd;
 		ssd_buf_hdr->next_freessd = -1;
         addToLRUHead(ssd_buf_hdr_for_lru);
+        ssd_buffer_strategy_control->n_usedssd ++;
         return ssd_buf_hdr;
     }
 
+	flush_fifo_times ++ ;
     ssd_buf_hdr = &ssd_buffer_descriptors[ssd_buffer_strategy_control_for_lru->last_lru];
     ssd_buf_hdr_for_lru = &ssd_buffer_descriptors_for_lru[ssd_buffer_strategy_control_for_lru->last_lru];
     moveToLRUHead(ssd_buf_hdr_for_lru);

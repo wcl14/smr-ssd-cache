@@ -30,12 +30,10 @@ size_t ssdbuftableLookup(SSDBufferTag *ssd_buf_tag, unsigned long hash_code)
 	SSDBufferHashBucket *nowbucket = GetSSDBufHashBucket(hash_code);
 	while (nowbucket != NULL) {
 		if (isSamebuf(&nowbucket->hash_key, ssd_buf_tag)) {
-	//		printf("find\n");
 			return nowbucket->ssd_buf_id;
 		}
 		nowbucket = nowbucket->next_item;
 	}
-//	printf("no find\n");
 
 	return -1;
 }

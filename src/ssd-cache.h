@@ -1,6 +1,3 @@
-#ifndef SMR_SSD_CACHE_SSD_CACHE_H
-#define SMR_SSD_CACHE_SSD_CACHE_H
-
 #define DEBUG 0
 /* ---------------------------ssd cache---------------------------- */
 
@@ -43,13 +40,18 @@ typedef enum
 {
 	CLOCK = 0,
     LRU,
-	LRUOfBand,
-	
+	LRUofBand,
+	Most,
+	Most_Dirty	
 } SSDEvictionStrategy;
 
 extern SSDBufferDesc	*ssd_buffer_descriptors;
 extern SSDBufferHashBucket	*ssd_buffer_hashtable;
 extern SSDBufferStrategyControl *ssd_buffer_strategy_control;
+extern unsigned long hit_num;
+extern unsigned long flush_ssd_blocks;
+//extern unsigned long write-ssd-num;
+//extern unsigned long flush_fifo_times;
 
 #define GetSSDBufHashBucket(hash_code) ((SSDBufferHashBucket *) (ssd_buffer_hashtable + (unsigned) (hash_code)))
 
@@ -58,6 +60,7 @@ extern void read_block(off_t offset, char* ssd_buffer);
 extern void write_block(off_t offset, char* ssd_buffer);
 //extern int read(unsigned offset);
 //extern int write(unsigned offset);
+extern void* flushSSDBuffer(SSDBufferDesc *ssd_buf_hdr);
 
 extern unsigned long NSSDBuffers;
 extern unsigned long NSSDBufTables;
@@ -66,5 +69,3 @@ extern char	smr_device[100];
 extern int 	smr_fd;
 extern int 	ssd_fd;
 extern SSDEvictionStrategy EvictStrategy;
-
-#endif

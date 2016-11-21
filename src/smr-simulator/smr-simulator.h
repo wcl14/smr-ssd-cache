@@ -36,14 +36,19 @@ typedef struct
 	long		last_usedssd;		// Tail of list of used ssds
 } SSDStrategyControl;
 
+extern unsigned long flush_bands;
+extern unsigned long flush_fifo_blocks;
+//extern unsigned long write-fifo-num;
+
 extern SSDDesc		*ssd_descriptors;
 extern char             *ssd_blocks;
 extern SSDStrategyControl *ssd_strategy_control;
 extern SSDHashBucket	*ssd_hashtable;
 
-#define GetSSDblockFromId(ssd_id) ((void *) (ssd_blocks + ((long) (ssd_id)) * SSD_SIZE))
+//#define GetSSDblockFromId(ssd_id) ((void *) (ssd_blocks + ((long) (ssd_id)) * SSD_SIZE))
 #define GetSSDHashBucket(hash_code) ((SSDHashBucket *) (ssd_hashtable + (unsigned long) (hash_code)))
 
+extern unsigned long GetSMRBandNumFromSSD(unsigned long offset);
 extern int smrread(int smr_fd, char* buffer, size_t size, off_t offset);
 extern int smrwrite(int smr_fd, char* buffer, size_t size, off_t offset);
 

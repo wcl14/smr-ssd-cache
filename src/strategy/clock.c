@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "ssd-cache.h"
-#include "smr-simulator/smr-simulator.h"
+#include "../ssd-cache.h"
+#include "../smr-simulator/smr-simulator.h"
 #include "clock.h"
 
 /*
@@ -21,6 +21,7 @@ void initSSDBufferForClock()
 		ssd_buf_hdr_for_clock->ssd_buf_id = i;
 		ssd_buf_hdr_for_clock->usage_count = 0;
 	}
+	flush_fifo_times = 0;
 }
 
 SSDBufferDesc *getCLOCKBuffer()
@@ -36,6 +37,7 @@ SSDBufferDesc *getCLOCKBuffer()
 		return ssd_buf_hdr;
 	}
 
+	flush_fifo_times ++ ;
 	for (;;) {
 		ssd_buf_hdr_for_clock = &ssd_buffer_descriptors_for_clock[ssd_buffer_strategy_control_for_clock->next_victimssd];
 		ssd_buf_hdr = &ssd_buffer_descriptors[ssd_buffer_strategy_control_for_clock->next_victimssd];
