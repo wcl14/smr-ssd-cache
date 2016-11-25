@@ -16,20 +16,28 @@ typedef struct
 	long 	last_lru; // Tail of list of LRU
 } SSDBufferStrategyControlForLRUofBand;
 
-/*typedef struct
+typedef struct
 {
-        unsigned long 	band_id;
+        unsigned long 	band_num;
 	long 	first_page;
-//	struct BandDesc *next_band;
-} BandDesc;*/
+	long 	next_free_band;
+} BandDesc;
+
+typedef struct
+{
+        long    first_freeband;
+        long    last_freeband;
+        long    n_usedband;
+} BandControl;
 
 extern unsigned long NBANDTables;
 //extern struct SSDBufferDesc;
 extern unsigned long flush_fifo_times;
 
 SSDBufferDescForLRUofBand	*ssd_buffer_descriptors_for_lruofband;
-//BandDesc	*band_descriptors;
+BandDesc	*band_descriptors;
 SSDBufferStrategyControlForLRUofBand *ssd_buffer_strategy_control_for_lruofband;
+BandControl *band_control;
 
 void initSSDBufferForLRUofBand();
 SSDBufferDesc *getLRUofBandBuffer(SSDBufferTag);

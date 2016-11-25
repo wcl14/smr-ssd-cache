@@ -7,8 +7,8 @@
 #define size_t long
 typedef struct BandHashBucket
 {
+	long band_num;
 	long band_id;
-	long ssd_buf_band_id;
 	struct BandHashBucket *next_item;
 } BandHashBucket;
 
@@ -19,8 +19,8 @@ extern unsigned long NBANDTables;
 extern unsigned long NSMRBands;
 
 extern void initBandTable(size_t size);
-extern unsigned long bandtableHashcode(long band_id);
-extern long bandtableLookup(long band_id,unsigned long hash_code);
-extern long bandtableInsert(long band_id,unsigned long hash_code,long first_page);
-extern long bandtableDelete(long band_id,unsigned long hasd_code);
+extern unsigned long bandtableHashcode(long band_num);
+extern long bandtableLookup(long band_num,unsigned long hash_code);
+extern long bandtableInsert(long band_num,unsigned long hash_code,long band_id);
+extern long bandtableDelete(long band_num,unsigned long hasd_code);
 #endif    /*  BANDTABLE_H*/
