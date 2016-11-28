@@ -16,7 +16,6 @@ BandHashBucket *band_hashtable;
 #define GetBandHashBucket(hash_code) ((BandHashBucket *)(band_hashtable +(unsigned)(hash_code)))
 
 extern unsigned long NBANDTables;
-extern unsigned long NSMRBands;
 
 extern void initBandTable(size_t size);
 extern unsigned long bandtableHashcode(long band_num);

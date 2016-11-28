@@ -1,0 +1,13 @@
+# Object files
+*.o
+*/smr-ssd-cache
+
+# data files
+*.txt
+*/smr
+*/ssd
+*/inner_ssd
+
+# temp files
+*.BAK
+*.swp

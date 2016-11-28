@@ -16,9 +16,7 @@
 
 int main()
 {
-    //char trace_file_path[]="../prn_2000000.txt";
-    //char trace_file_path[]="../trace_for_test.txt";
-    char trace_file_path[]="../test-10.txt";
+    char trace_file_path[]="../test-10-2.txt";
 
 	initSSD();
     initSSDBuffer();

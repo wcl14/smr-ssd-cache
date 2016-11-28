@@ -9,9 +9,9 @@ typedef struct
 
 typedef struct
 {
-	unsigned long band_id;
+	unsigned long band_num;
 	unsigned long current_pages;
-    unsigned long first_ssd_id;
+	unsigned long first_page;
 } BandDescForMost;
 
 typedef struct
@@ -20,6 +20,7 @@ typedef struct
 } SSDBufferStrategyControlForMost;
 
 extern unsigned long NBANDTables;
+extern unsigned long NSMRBands;
 
 SSDBufferDescForMost *ssd_buffer_descriptors_for_most;
 BandDescForMost *band_descriptors_for_most;
