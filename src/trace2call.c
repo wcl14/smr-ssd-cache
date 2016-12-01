@@ -8,7 +8,7 @@
 #include "strategy/clock.h"
 #include "strategy/lru.h"
 #include "strategy/lruofband.h"
-
+#include "strategy/scan.h"
 void trace_to_iocall(char* trace_file_path) {
 	FILE* trace;
 	if((trace = fopen(trace_file_path, "rt")) == NULL) {
@@ -61,12 +61,18 @@ void trace_to_iocall(char* trace_file_path) {
         	if(strstr(write_or_read, "W")) {
                	 if (DEBUG)
        				printf("[INFO] trace_to_iocall():--------wirte offset=%lu\n", offset);
-        		write_block(offset, ssd_buffer);
+        		if(BandOrBlock == 0 )
+				write_block(offset, ssd_buffer);
+			else
+				write_band(offset,ssd_buffer);
      		 } else if(strstr(write_or_read, "R")) {
         /*       	if (DEBUG)
        			printf("[INFO] trace_to_iocall():--------read offset=%lu\n", offset);
-        		read_block(offset, ssd_buffer);
-        */	 }
+        		if(BandOrBlock == 0 )
+				read_block(offset, ssd_buffer);
+       			else
+				read_band(offset,ssd_buffer);
+	 */	 }
       	offset += BLCKSZ;
      	size -= BLCKSZ;
     	}

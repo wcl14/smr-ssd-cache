@@ -42,7 +42,8 @@ typedef enum
     LRU,
 	LRUofBand,
 	Most,
-	Most_Dirty	
+	Most_Dirty,	
+	SCAN
 } SSDEvictionStrategy;
 
 extern SSDBufferDesc	*ssd_buffer_descriptors;
@@ -58,6 +59,9 @@ extern unsigned long flush_ssd_blocks;
 extern void initSSDBuffer();
 extern void read_block(off_t offset, char* ssd_buffer);
 extern void write_block(off_t offset, char* ssd_buffer);
+extern void read_band(off_t offset, char* ssd_buffer);
+extern void write_band(off_t offset, char* ssd_buffer);
+/
 //extern int read(unsigned offset);
 //extern int write(unsigned offset);
 extern void* flushSSDBuffer(SSDBufferDesc *ssd_buf_hdr);
