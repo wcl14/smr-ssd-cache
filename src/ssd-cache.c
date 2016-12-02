@@ -153,7 +153,7 @@ static void * hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy st
     else if (strategy == Most || strategy == Most_Dirty)
 	hitInMostBuffer();
     else if (strategy == SCAN)
-        hitInSCANBuffer();
+        hitInSCANBuffer(ssd_buf_hdr);
 }
 
 /*

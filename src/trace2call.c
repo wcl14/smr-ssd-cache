@@ -9,6 +9,9 @@
 #include "strategy/lru.h"
 #include "strategy/lruofband.h"
 #include "strategy/scan.h"
+int BandOrBlock = 0;
+/*Block = 0, Band=1*/
+
 void trace_to_iocall(char* trace_file_path) {
 	FILE* trace;
 	if((trace = fopen(trace_file_path, "rt")) == NULL) {

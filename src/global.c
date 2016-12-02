@@ -44,7 +44,7 @@ char inner_ssd_device[] = "/Users/wangchunling/Software/code/smr-test/smr-ssd-ca
 SSDEvictionStrategy EvictStrategy = Most;
 //SSDEvictionStrategy EvictStrategy = LRU;
 //SSDEvictionStrategy EvictStrategy = SCAN;
-int BandOrBlock = 0;
+//int BandOrBlock = 0;
 /*Block = 0, Band=1*/
 int 		    smr_fd;
 int 		    ssd_fd;
