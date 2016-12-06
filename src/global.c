@@ -25,6 +25,7 @@ size_t BNDSZ = 400*1024;
 unsigned long INTERVALTIMELIMIT = 1000;
 unsigned long NSSDLIMIT = 500000;
 unsigned long NSSDCLEAN = 20000;
+unsigned long WRITEAMPLIFICATION = 100;
 //unsigned long NSSDLIMIT = 2500000;
 //unsigned long NSSDCLEAN = 100000;
 /*unsigned long INTERVALTIMELIMIT = 1000;
@@ -44,6 +45,7 @@ char inner_ssd_device[] = "/Users/wangchunling/Software/code/smr-test/smr-ssd-ca
 SSDEvictionStrategy EvictStrategy = Most;
 //SSDEvictionStrategy EvictStrategy = LRU;
 //SSDEvictionStrategy EvictStrategy = SCAN;
+//SSDEvictionStrategy EvictStrategy = WA;
 //int BandOrBlock = 0;
 /*Block = 0, Band=1*/
 int 		    smr_fd;

@@ -1,5 +1,6 @@
 #define DEBUG 0
 /*----------------------------------Most---------------------------------*/
+#include <band_table.h>
 
 typedef struct
 {
@@ -25,7 +26,8 @@ extern unsigned long NSMRBands;
 SSDBufferDescForMost *ssd_buffer_descriptors_for_most;
 BandDescForMost *band_descriptors_for_most;
 SSDBufferStrategyControlForMost *ssd_buffer_strategy_control_for_most;
+BandHashBucket *band_hashtable_for_most;
 
 void initSSDBufferForMost();
-SSDBufferDesc *getMostBuffer(SSDBufferTag,long flag);
+SSDBufferDesc *getMostBuffer(SSDBufferTag);
 void hitInMostBuffer();

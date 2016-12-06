@@ -1,5 +1,6 @@
 #define DEBUG 0
 /*-------------------------lruofband-------------------------------*/
+#include <band_table.h>
 
 // extern unsigned long NSMRBands;
 typedef struct {
@@ -21,6 +22,7 @@ typedef struct {
 
 typedef struct {
 	long		band_num;
+    long        current_pages;
 	long		first_page;
 	long		next_free_band;
 }		BandDesc;
@@ -38,6 +40,7 @@ SSDBufferDescForLRUofBand *ssd_buffer_descriptors_for_lruofband;
 BandDesc       *band_descriptors;
 SSDBufferStrategyControlForLRUofBand *ssd_buffer_strategy_control_for_lruofband;
 BandControl    *band_control;
+BandHashBucket *band_hashtable_for_lruofband;
 
 void		initSSDBufferForLRUofBand();
 SSDBufferDesc  *getLRUofBandBuffer(SSDBufferTag);

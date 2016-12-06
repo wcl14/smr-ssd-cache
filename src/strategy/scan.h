@@ -3,6 +3,7 @@
 
 #define DEBUG 0
 /* ---------------------------scan---------------------------- */
+#include <band_table.h>
 
 typedef struct
 {
@@ -19,6 +20,7 @@ typedef struct
 
 SSDBufferDescForSCAN	*ssd_buffer_descriptors_for_scan;
 SSDBufferStrategyControlForSCAN *ssd_buffer_strategy_control_for_scan;
+BandHashBucket *band_hashtable;
 
 extern void initSSDBufferForSCAN();
 extern SSDBufferDesc *getSCANBuffer();

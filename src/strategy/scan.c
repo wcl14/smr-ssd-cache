@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../ssd-cache.h"
-#include "../smr-simulator/smr-simulator.h"
+#include "ssd-cache.h"
+#include "smr-simulator/smr-simulator.h"
 #include "scan.h"
 
 static volatile void* addToSCANHead(SSDBufferDescForSCAN *ssd_buf_hdr_for_scan);

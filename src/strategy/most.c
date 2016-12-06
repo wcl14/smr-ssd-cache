@@ -1,14 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../ssd-cache.h"
-#include "../smr-simulator/smr-simulator.h"
+#include "ssd-cache.h"
+#include "smr-simulator/smr-simulator.h"
 #include "most.h"
 #include "band_table.h"
+
+static volatile void addToBand(SSDBufferTag ssd_buf_tag, long freessd);
+static volatile void deleteBand();
 
 void 
 initSSDBufferForMost()
 {
-	initBandTable(NBANDTables);
+	initBandTable(NBANDTables, &band_hashtable_for_most);
 
 	SSDBufferDescForMost *ssd_buf_hdr_for_most;
 	BandDescForMost *band_hdr_for_most;
@@ -38,15 +41,13 @@ hitInMostBuffer()
 	return;
 }
 
-void 
+static volatile void
 deleteBand()
 {
 	BandDescForMost	band_hdr_for_most;
 	BandDescForMost	temp;
 
-	//printf("\ndelete band:%ld\n", band_descriptors_for_most[0].band_num);
 	band_hdr_for_most = band_descriptors_for_most[0];
-	//printf("%ld\n", band_hdr_for_most.band_num);
 	temp = band_descriptors_for_most[ssd_buffer_strategy_control_for_most->nbands - 1];
 	long		parent = 0;
 	long		child = parent * 2 + 1;
@@ -58,8 +59,8 @@ deleteBand()
 		else {
 			band_descriptors_for_most[parent] = band_descriptors_for_most[child];
 			long		band_hash = bandtableHashcode(band_descriptors_for_most[child].band_num);
-			bandtableDelete(band_descriptors_for_most[child].band_num, band_hash);
-			bandtableInsert(band_descriptors_for_most[child].band_num, band_hash, parent);
+			bandtableDelete(band_descriptors_for_most[child].band_num, band_hash, &band_hashtable_for_most);
+			bandtableInsert(band_descriptors_for_most[child].band_num, band_hash, parent, &band_hashtable_for_most);
 			parent = child;
 			child = child * 2 + 1;
 		}
@@ -70,23 +71,20 @@ deleteBand()
 	band_descriptors_for_most[ssd_buffer_strategy_control_for_most->nbands - 1].first_page = -1;
 	ssd_buffer_strategy_control_for_most->nbands--;
 	long		band_hash = bandtableHashcode(temp.band_num);
-	bandtableDelete(temp.band_num, band_hash);
-	bandtableInsert(temp.band_num, band_hash, parent);
+	bandtableDelete(temp.band_num, band_hash, &band_hashtable_for_most);
+	bandtableInsert(temp.band_num, band_hash, parent, &band_hashtable_for_most);
 
 	long		band_num = band_hdr_for_most.band_num;
-	//printf("band_num = %ld\n", band_num);
 	band_hash = bandtableHashcode(band_num);
-	long		band_id = bandtableLookup(band_num, band_hash);
+	long		band_id = bandtableLookup(band_num, band_hash, band_hashtable_for_most);
 	long		first_page = band_hdr_for_most.first_page;
 
 	SSDBufferTag	old_tag;
 	unsigned char	old_flag;
 	unsigned long	old_hash;
 	SSDBufferDesc  *ssd_buf_hdr;
-	//printf("---------------------band_num:%ld\n", band_num);
 
 	while (first_page >= 0) {
-		//printf("------------------------first_page:%ld\n", first_page);
 		ssd_buf_hdr = &ssd_buffer_descriptors[first_page];
 
 		ssd_buf_hdr->next_freessd = ssd_buffer_strategy_control->first_freessd;
@@ -105,15 +103,15 @@ deleteBand()
 		}
 		ssd_buffer_strategy_control->n_usedssd--;
 	}
-	bandtableDelete(band_num, band_hash);
+	bandtableDelete(band_num, band_hash, &band_hashtable_for_most);
 }
 
-void 
-addToBand(SSDBufferTag ssd_buf_tag, long first_freessd, long flag)
+static volatile void
+addToBand(SSDBufferTag ssd_buf_tag, long first_freessd)
 {
 	long		band_num = GetSMRBandNumFromSSD(ssd_buf_tag.offset);
 	unsigned long	band_hash = bandtableHashcode(band_num);
-	long		band_id = bandtableLookup(band_num, band_hash);
+	long		band_id = bandtableLookup(band_num, band_hash, band_hashtable_for_most);
 
 	SSDBufferDescForMost *ssd_buf_for_most;
 	BandDescForMost *band_hdr_for_most;
@@ -135,12 +133,12 @@ addToBand(SSDBufferTag ssd_buf_tag, long first_freessd, long flag)
 			temp = band_descriptors_for_most[child];
 			band_descriptors_for_most[child] = band_descriptors_for_most[parent];
 			band_hash = bandtableHashcode(band_descriptors_for_most[parent].band_num);
-			bandtableDelete(band_descriptors_for_most[parent].band_num, band_hash);
-			bandtableInsert(band_descriptors_for_most[parent].band_num, band_hash, child);
+			bandtableDelete(band_descriptors_for_most[parent].band_num, band_hash, &band_hashtable_for_most);
+			bandtableInsert(band_descriptors_for_most[parent].band_num, band_hash, child, &band_hashtable_for_most);
 			band_descriptors_for_most[parent] = temp;
 			band_hash = bandtableHashcode(temp.band_num);
-			bandtableDelete(temp.band_num, band_hash);
-			bandtableInsert(temp.band_num, band_hash, parent);
+			bandtableDelete(temp.band_num, band_hash, &band_hashtable_for_most);
+			bandtableInsert(temp.band_num, band_hash, parent, &band_hashtable_for_most);
 			child = parent;
 			parent = (child - 1) / 2;
 		}
@@ -149,7 +147,7 @@ addToBand(SSDBufferTag ssd_buf_tag, long first_freessd, long flag)
 		band_descriptors_for_most[ssd_buffer_strategy_control_for_most->nbands - 1].band_num = band_num;
 		band_descriptors_for_most[ssd_buffer_strategy_control_for_most->nbands - 1].current_pages = 1;
 		band_descriptors_for_most[ssd_buffer_strategy_control_for_most->nbands - 1].first_page = first_freessd;
-		bandtableInsert(band_num, band_hash, ssd_buffer_strategy_control_for_most->nbands - 1);
+		bandtableInsert(band_num, band_hash, ssd_buffer_strategy_control_for_most->nbands - 1, &band_hashtable_for_most);
 		SSDBufferDescForMost *new_ssd_buf_for_most;
 		new_ssd_buf_for_most = &ssd_buffer_descriptors_for_most[first_freessd];
 		new_ssd_buf_for_most->next_ssd_buf = -1;
@@ -157,7 +155,7 @@ addToBand(SSDBufferTag ssd_buf_tag, long first_freessd, long flag)
 }
 
 SSDBufferDesc  *
-getMostBuffer(SSDBufferTag ssd_buf_tag, long flag)
+getMostBuffer(SSDBufferTag ssd_buf_tag)
 {
 	long		i;
 	SSDBufferDesc  *ssd_buffer_hdr;
@@ -167,7 +165,7 @@ getMostBuffer(SSDBufferTag ssd_buf_tag, long flag)
 		deleteBand();
 		first_freessd = ssd_buffer_strategy_control->first_freessd;
 	}
-	addToBand(ssd_buf_tag, first_freessd, flag);
+	addToBand(ssd_buf_tag, first_freessd);
 	ssd_buffer_hdr = &ssd_buffer_descriptors[first_freessd];
 	ssd_buffer_strategy_control->first_freessd = ssd_buffer_hdr->next_freessd;
 	ssd_buffer_hdr->next_freessd = -1;

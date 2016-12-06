@@ -4,11 +4,11 @@
 
 static bool isSameband(long band_id1,long band_id2);
 
-void initBandTable(size_t size)
+void initBandTable(size_t size, BandHashBucket ** band_hashtable)
 {
-	band_hashtable = (BandHashBucket *)malloc(sizeof(BandHashBucket)*size);
+	*band_hashtable = (BandHashBucket *)malloc(sizeof(BandHashBucket)*size);
 	size_t i;
-	BandHashBucket *band_hash = band_hashtable;
+	BandHashBucket *band_hash = *band_hashtable;
 	for(i = 0;i < size; band_hash++,i++){
 		band_hash->band_num = -1;
 		band_hash->band_id = -1;
@@ -22,9 +22,9 @@ unsigned long bandtableHashcode(long band_num)
 	return band_hash;
 }
 
-size_t bandtableLookup(long band_num,unsigned long hash_code)
+size_t bandtableLookup(long band_num,unsigned long hash_code, BandHashBucket * band_hashtable)
 {
-	BandHashBucket *nowbucket = GetBandHashBucket(hash_code);
+	BandHashBucket *nowbucket = GetBandHashBucket(hash_code, band_hashtable);
 	while(nowbucket != NULL){
 		if(isSameband(nowbucket->band_num,band_num))
 			return nowbucket->band_id;	
@@ -33,10 +33,10 @@ size_t bandtableLookup(long band_num,unsigned long hash_code)
 	return -1;
 }
 
-long bandtableInsert(long band_num,unsigned long hash_code,long band_id)
+long bandtableInsert(long band_num,unsigned long hash_code,long band_id, BandHashBucket ** band_hashtable)
 {
 //	printf("insert table:band_num%ld hash_code:%ld band_id:%ld\n ",band_num,hash_code,band_id);
-	BandHashBucket *nowbucket = GetBandHashBucket(hash_code);	
+	BandHashBucket *nowbucket = GetBandHashBucket(hash_code, *band_hashtable);	
 	while(nowbucket->next_item != NULL && nowbucket != NULL){
 		nowbucket = nowbucket->next_item;
 	}
@@ -54,9 +54,9 @@ long bandtableInsert(long band_num,unsigned long hash_code,long band_id)
 	return -1;
 }
 
-long bandtableDelete(long band_num,unsigned long hash_code)
+long bandtableDelete(long band_num,unsigned long hash_code, BandHashBucket ** band_hashtable)
 {
-	BandHashBucket *nowbucket = GetBandHashBucket(hash_code);
+	BandHashBucket *nowbucket = GetBandHashBucket(hash_code, *band_hashtable);
 	long del_val;
 	BandHashBucket *delitem;
 	while(nowbucket->next_item != NULL && nowbucket != NULL){

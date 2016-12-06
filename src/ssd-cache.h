@@ -43,7 +43,8 @@ typedef enum
 	LRUofBand,
 	Most,
 	Most_Dirty,	
-	SCAN
+	SCAN,
+    WA
 } SSDEvictionStrategy;
 
 extern SSDBufferDesc	*ssd_buffer_descriptors;
