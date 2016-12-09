@@ -30,6 +30,7 @@ void initSSDBufferForSCAN()
         ssd_buf_hdr_for_scan->last_scan = -1;
 
 	}
+	flush_fifo_times = 0;
 }
 
 static volatile void* addToSCANHead(SSDBufferDescForSCAN *ssd_buf_hdr_for_scan)
@@ -66,9 +67,10 @@ void output(){
 	printf("scanptr %ld\n",ssd_buffer_strategy_control_for_scan->scan_ptr);
 	printf("start %ld\n",ssd_buffer_strategy_control_for_scan->start);
 
+
 }
 void insertByTag(SSDBufferTag ssd_buf_tag, long ssd_buf_id){
-//		printf("start %ld\n",ssd_buffer_strategy_control_for_scan->start);
+		printf("start %ld\n",ssd_buffer_strategy_control_for_scan->start);
 	if(ssd_buffer_strategy_control_for_scan->start == -1){
 		ssd_buffer_strategy_control_for_scan->start = ssd_buf_id;
 		ssd_buffer_strategy_control_for_scan->scan_ptr = ssd_buf_id;
@@ -156,35 +158,53 @@ static volatile void* moveToSCANHead(SSDBufferDescForSCAN *ssd_buf_hdr_for_scan)
 */
 }
 
-SSDBufferDesc *getSCANBuffer()
+SSDBufferDesc *getSCANBuffer(SSDBufferTag ssd_buf_tag)
 {
 	SSDBufferDesc *ssd_buf_hdr;
 	SSDBufferDescForSCAN *ssd_buf_hdr_for_scan;
     
+	if(ssd_buffer_strategy_control->first_freessd <0){
+		flush_fifo_times++;
+		ssd_buf_hdr = &ssd_buffer_descriptors[ssd_buffer_strategy_control_for_scan->scan_ptr];
+		if(ssd_buf_hdr->ssd_buf_id == ssd_buffer_strategy_control_for_scan->start){
+			ssd_buffer_strategy_control_for_scan->start = ssd_buffer_descriptors_for_scan[ssd_buffer_strategy_control_for_scan->scan_ptr].next_scan;	
+		}	
+/*if the next is -1*/
+		if(ssd_buffer_descriptors_for_scan[ssd_buffer_strategy_control_for_scan->scan_ptr].next_scan != -1){
+			ssd_buffer_strategy_control_for_scan->scan_ptr = ssd_buffer_descriptors_for_scan[ssd_buffer_strategy_control_for_scan->scan_ptr].next_scan;
+		}else{
+	//		ssd_buffer_descriptors_for_scan[ssd_buffer_descriptors_for_scan[ssd_buffer_strategy_control_for_scan->scan_ptr].
+			ssd_buffer_strategy_control_for_scan->scan_ptr = ssd_buffer_strategy_control_for_scan->start;
+		}
+		
+ 		unsigned char   old_flag = ssd_buf_hdr->ssd_buf_flag;
+        	SSDBufferTag    old_tag = ssd_buf_hdr->ssd_buf_tag;
+        	if (DEBUG)
+                	printf("[INFO] SSDBufferAlloc(): old_flag&SSD_BUF_DIRTY=%d\n", old_flag & SSD_BUF_DIRTY);
+        	if (old_flag & SSD_BUF_DIRTY != 0) {
+                	flushSSDBuffer(ssd_buf_hdr);
+       		}
+        	if (old_flag & SSD_BUF_VALID != 0) {
+                	unsigned long   old_hash = ssdbuftableHashcode(&old_tag);
+                	ssdbuftableDelete(&old_tag, old_hash);
+        	}
+		deleteFromSCAN(ssd_buf_hdr->ssd_buf_id);
+		ssd_buf_hdr->next_freessd = ssd_buffer_strategy_control->first_freessd; 
+		ssd_buffer_strategy_control->first_freessd = ssd_buf_hdr->ssd_buf_id;
+					
+	}
+
+
 	if (ssd_buffer_strategy_control->first_freessd >=0 ) {
 	//	printf("Enter freessd\n");
 		ssd_buf_hdr = &ssd_buffer_descriptors[ssd_buffer_strategy_control->first_freessd];
 		ssd_buf_hdr_for_scan = &ssd_buffer_descriptors_for_scan[ssd_buffer_strategy_control->first_freessd];
 		ssd_buffer_strategy_control->first_freessd = ssd_buf_hdr->next_freessd;
 		ssd_buf_hdr->next_freessd = -1;
-	//	有空余的，返回不添加到头部
-	//	 addToSCANHead(ssd_buf_hdr_for_scan);
-//	printf("ssd_id %ld\n",ssd_buf_hdr->ssd_buf_id);
-        return ssd_buf_hdr;
+		// request has known tag
+		insertByTag(ssd_buf_tag,ssd_buf_hdr->ssd_buf_id);
+	        return ssd_buf_hdr;
     }
-    ssd_buf_hdr = &ssd_buffer_descriptors[ssd_buffer_strategy_control_for_scan->scan_ptr];
-//	printf("scan_Ptr%ld   ssd_buf_id %ld\n",ssd_buffer_strategy_control_for_scan->scan_ptr,ssd_buf_hdr->ssd_buf_id);
-/*if return the start */
-if(ssd_buf_hdr->ssd_buf_id == ssd_buffer_strategy_control_for_scan->start){
-	ssd_buffer_strategy_control_for_scan->start = ssd_buffer_descriptors_for_scan[ssd_buffer_strategy_control_for_scan->scan_ptr].next_scan;	
-}
-/*if the next is -1*/
-if(ssd_buffer_descriptors_for_scan[ssd_buffer_strategy_control_for_scan->scan_ptr].next_scan != -1){
-	ssd_buffer_strategy_control_for_scan->scan_ptr = ssd_buffer_descriptors_for_scan[ssd_buffer_strategy_control_for_scan->scan_ptr].next_scan;
-}else{
-	ssd_buffer_strategy_control_for_scan->scan_ptr = ssd_buffer_strategy_control_for_scan->start;
-}
-    deleteFromSCAN(ssd_buf_hdr->ssd_buf_id);
     return ssd_buf_hdr;
 }
 

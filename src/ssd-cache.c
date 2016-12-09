@@ -105,9 +105,6 @@ SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool * found)
 	ssd_buf_hdr->ssd_buf_flag &= ~(SSD_BUF_VALID | SSD_BUF_DIRTY);
 	ssd_buf_hdr->ssd_buf_tag = ssd_buf_tag;
 	*found = 0;
-	if (EvictStrategy == SCAN)
-		insertByTag(ssd_buf_tag, ssd_buf_hdr->ssd_buf_id);
-	return ssd_buf_hdr;
 	return ssd_buf_hdr;
 }
 
@@ -142,7 +139,7 @@ getSSDStrategyBuffer(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy)
 	else if (strategy == Most)
 		return getMostBuffer(ssd_buf_tag);
 	else if (strategy == SCAN)
-		return getSCANBuffer();
+		return getSCANBuffer(ssd_buf_tag);
 	else if (strategy == WA)
 		return getWABuffer(ssd_buf_tag);
 }
