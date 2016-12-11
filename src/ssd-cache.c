@@ -55,6 +55,12 @@ flushSSDBuffer(SSDBufferDesc * ssd_buf_hdr)
 	char		ssd_buffer[SSD_BUFFER_SIZE];
 	int		returnCode;
 
+	returnCode = posix_memalign(&ssd_buffer,512,sizeof(char)*BLCKSZ);
+        if(returnCode < 0){
+                printf("[ERROR] flushSSDBuffer():--------posix memalign\n");
+                free(ssd_buffer);
+                exit(-1);
+        }
 	returnCode = pread(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
 	if (returnCode < 0) {
 		printf("[ERROR] flushSSDBuffer():-------read from ssd: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
@@ -66,6 +72,7 @@ flushSSDBuffer(SSDBufferDesc * ssd_buf_hdr)
 		printf("[ERROR] flushSSDBuffer():-------write to smr: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, ssd_buf_hdr->ssd_buf_tag.offset);
 		exit(-1);
 	}
+	free(ssd_buffer);
 	return NULL;
 }
 

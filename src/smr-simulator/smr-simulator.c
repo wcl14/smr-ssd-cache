@@ -181,15 +181,21 @@ static volatile void* flushSSD(SSDDesc *ssd_hdr)
 	long i;
     int returnCode;
 	char buffer[BLCKSZ];
-	char* band[BNDSZ/BLCKSZ];
-	bool bandused[BNDSZ/BLCKSZ];
+	char* band;
 	unsigned long BandNum = GetSMRBandNumFromSSD(ssd_hdr->ssd_tag.offset);
 	off_t Offset;
 
-	memset(bandused, 0, BNDSZ/BLCKSZ*sizeof(bool));
-	for (i = 0; i < BNDSZ/BLCKSZ; i++)
-		band[i] = (char *) malloc(sizeof(char)*BLCKSZ);
-	returnCode = pread(inner_ssd_fd, band[GetSMROffsetInBandFromSSD(ssd_hdr)], BLCKSZ, ssd_hdr->ssd_id * BLCKSZ);
+	returnCode = posix_memalign(&band,512,sizeof(char)*BNDSZ);
+        if(returnCode < 0){
+                printf("[ERROR] flushSSD():-------posix_memalign\n");
+                exit(-1);
+        }
+	returnCode = pread(smr_fd, band, BNDSZ, BandNum * BNDSZ);
+        if(returnCode < 0){
+                printf("[ERROR] flushSSD():---------read from smr: fd=%d, errorcode=%d, offset=%lu\n", smr_fd, returnCode, BandNum*BNDSZ);
+                exit(-1);
+        }
+	returnCode = pread(inner_ssd_fd, band+GetSMROffsetInBandFromSSD(ssd_hdr)*BLCKSZ, BLCKSZ, ssd_hdr->ssd_id * BLCKSZ);
 	if(returnCode < 0) {
 		printf("[ERROR] flushSSD():-------read from inner ssd: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, ssd_hdr->ssd_id * BLCKSZ);
         exit(-1);
@@ -199,12 +205,11 @@ static volatile void* flushSSD(SSDDesc *ssd_hdr)
 	{
 		if (ssd_descriptors[i%NSSDs].ssd_flag & SSD_VALID && GetSMRBandNumFromSSD((&ssd_descriptors[i%NSSDs])->ssd_tag.offset) == BandNum) {
 			Offset = GetSMROffsetInBandFromSSD(&ssd_descriptors[i%NSSDs]);
-			returnCode = pread(inner_ssd_fd, band[Offset], BLCKSZ, ssd_descriptors[i%NSSDs].ssd_id * BLCKSZ);
+			returnCode = pread(inner_ssd_fd, band+Offset*BLCKSZ, BLCKSZ, ssd_descriptors[i%NSSDs].ssd_id * BLCKSZ);
 			if(returnCode < 0) {
 				printf("[ERROR] flushSSD():-------read from inner ssd: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, ssd_descriptors[i%NSSDs].ssd_id * BLCKSZ);
 		                exit(-1);
 			}
-			bandused[Offset] = 1;
 		    long tmp_hash = ssdtableHashcode(&ssd_descriptors[i%NSSDs].ssd_tag);
 		    long tmp_id = ssdtableLookup(&ssd_descriptors[i%NSSDs].ssd_tag, tmp_hash);
 		    ssdtableDelete(&ssd_descriptors[i%NSSDs].ssd_tag, ssdtableHashcode(&ssd_descriptors[i%NSSDs].ssd_tag));
@@ -212,22 +217,13 @@ static volatile void* flushSSD(SSDDesc *ssd_hdr)
 		}
 	}
 	
-	for (i = 0; i < BNDSZ/BLCKSZ; i++)
-	{
-		if (bandused[i] == 0) {
-			returnCode = pread(smr_fd, band[i], BLCKSZ, (BandNum * BNDSZ / BLCKSZ + i) * BLCKSZ);
-			if(returnCode < 0) {
-				printf("[ERROR] flushSSD():-------read from smr: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, (BandNum * BNDSZ / BLCKSZ + i) * BLCKSZ);
-		                exit(-1);
-			}
-		}
-	}
 	flush_bands++;
 	returnCode = pwrite(smr_fd, band, BNDSZ, BandNum * BNDSZ);
 	if(returnCode < 0) {
 		printf("[ERROR] flushSSD():-------write to smr: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, BandNum * BNDSZ);
                 exit(-1);
 	}
+	free(band);
 }
 
 

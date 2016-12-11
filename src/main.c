@@ -1,6 +1,7 @@
 /*
  * main.c
  */
+#define _GNU_SOURCE 1
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,9 +21,9 @@ int main()
 
 	initSSD();
     initSSDBuffer();
-    smr_fd = open(smr_device, O_RDWR|O_SYNC);
-    ssd_fd = open(ssd_device, O_RDWR|O_SYNC);
-    inner_ssd_fd = open(inner_ssd_device, O_RDWR|O_SYNC);
+    smr_fd = open(smr_device, O_RDWR|O_DIRECT);
+    ssd_fd = open(ssd_device, O_RDWR);
+    inner_ssd_fd = open(inner_ssd_device, O_RDWR|O_DIRECT);
     trace_to_iocall(trace_file_path);
     close(smr_fd);
     close(ssd_fd);

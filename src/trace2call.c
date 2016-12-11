@@ -33,6 +33,12 @@ void trace_to_iocall(char* trace_file_path) {
 
     gettimeofday(&tv_begin, &tz_begin);
     time_begin = tv_begin.tv_sec + tv_begin.tv_usec/1000000.0;
+    int returnCode = posix_memalign(&ssd_buffer,512,sizeof(char)*BLCKSZ);
+        if(returnCode < 0){
+                printf("[ERROR] flushSSDBuffer():--------posix memalign\n");
+                free(ssd_buffer);
+                exit(-1);
+        }
     while(!feof(trace)) {
 		fscanf(trace, "%lf %c %s %lu %f", &time, &action, write_or_read, &offset, &size_float);
         //printf("original size : %f\n",size_float);
@@ -57,7 +63,6 @@ void trace_to_iocall(char* trace_file_path) {
 	else 
 		size = offset_end - offset;
 //	printf("offset : %lu    size %lu\n",offset,size);
-	ssd_buffer = (char *)malloc(sizeof(char)*BLCKSZ);
     	for (i=0; i<BLCKSZ; i++)
       		ssd_buffer[i] = '1';
 	while (size > 0 ) {
