@@ -22,6 +22,7 @@ SSDBufferDescForSCAN	*ssd_buffer_descriptors_for_scan;
 SSDBufferStrategyControlForSCAN *ssd_buffer_strategy_control_for_scan;
 BandHashBucket *band_hashtable;
 
+extern unsigned long flush_fifo_times;
 extern void initSSDBufferForSCAN();
 extern SSDBufferDesc *getSCANBuffer();
 extern void *hitInSCANBuffer(SSDBufferDesc *);
