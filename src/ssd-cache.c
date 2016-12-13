@@ -52,7 +52,7 @@ initSSDBuffer()
 void           *
 flushSSDBuffer(SSDBufferDesc * ssd_buf_hdr)
 {
-	char		ssd_buffer[SSD_BUFFER_SIZE];
+	char		*ssd_buffer;
 	int		returnCode;
 
 	returnCode = posix_memalign(&ssd_buffer,512,sizeof(char)*BLCKSZ);
