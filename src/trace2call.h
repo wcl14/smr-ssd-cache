@@ -3,3 +3,4 @@
 
 
 extern void trace_to_iocall(char* trace_file_path);
+extern int BandOrBlock;

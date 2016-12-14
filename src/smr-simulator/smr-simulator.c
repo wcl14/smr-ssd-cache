@@ -190,6 +190,7 @@ static volatile void* flushSSD(SSDDesc *ssd_hdr)
                 printf("[ERROR] flushSSD():-------posix_memalign\n");
                 exit(-1);
         }
+if(BandOrBlock == 0 ){
 	returnCode = pread(smr_fd, band, BNDSZ, BandNum * BNDSZ);
         if(returnCode < 0){
                 printf("[ERROR] flushSSD():---------read from smr: fd=%d, errorcode=%d, offset=%lu\n", smr_fd, returnCode, BandNum*BNDSZ);
@@ -216,7 +217,13 @@ static volatile void* flushSSD(SSDDesc *ssd_hdr)
 			ssd_descriptors[i%NSSDs].ssd_flag = 0;
 		}
 	}
-	
+	}else{
+		returnCode = pread(inner_ssd_fd, band, BNDSZ, ssd_hdr->ssd_id *BNDSZ);
+		if(returnCode < 0) {
+	        	printf("[ERROR] flushSSD():-------pread: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, BandNum * BNDSZ);
+		exit(-1);
+		}
+	}
 	flush_bands++;
 	returnCode = pwrite(smr_fd, band, BNDSZ, BandNum * BNDSZ);
 	if(returnCode < 0) {
