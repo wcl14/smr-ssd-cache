@@ -19,6 +19,9 @@ void initSSDBufTable(size_t size)
 
 unsigned long ssdbuftableHashcode(SSDBufferTag *ssd_buf_tag)
 {
+	if(BandOrBlock == 1){ 
+                SSD_BUFFER_SIZE = BNDSZ;
+        }
 	unsigned long ssd_buf_hash = (ssd_buf_tag->offset / SSD_BUFFER_SIZE) % NSSDBufTables;
 	return ssd_buf_hash;
 }

@@ -47,6 +47,8 @@ typedef enum
     WA
 } SSDEvictionStrategy;
 
+extern size_t BNDSZ;
+extern int BandOrBlock;
 extern SSDBufferDesc	*ssd_buffer_descriptors;
 extern SSDBufferHashBucket	*ssd_buffer_hashtable;
 extern SSDBufferStrategyControl *ssd_buffer_strategy_control;

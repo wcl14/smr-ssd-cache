@@ -2,6 +2,9 @@
 #include "smr-simulator/smr-simulator.h"
 #include "main.h"
 
+int BandOrBlock = 1;
+/* Block = 0,Band =1*/
+
 unsigned long NSSDBuffers = 500000;
 unsigned long NSSDBufTables = 500000;
 /*unsigned long NSSDBuffers = 1000;
