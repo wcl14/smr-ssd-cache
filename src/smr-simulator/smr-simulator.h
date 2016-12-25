@@ -48,12 +48,15 @@ extern SSDHashBucket	*ssd_hashtable;
 //#define GetSSDblockFromId(ssd_id) ((void *) (ssd_blocks + ((long) (ssd_id)) * SSD_SIZE))
 #define GetSSDHashBucket(hash_code) ((SSDHashBucket *) (ssd_hashtable + (unsigned long) (hash_code)))
 
+extern unsigned long GetSMRActualBandSizeFromSSD(unsigned long offset);
 extern unsigned long GetSMRBandNumFromSSD(unsigned long offset);
+extern off_t GetSMROffsetInBandFromSSD(SSDDesc *ssd_hdr);
 extern int smrread(int smr_fd, char* buffer, size_t size, off_t offset);
 extern int smrwrite(int smr_fd, char* buffer, size_t size, off_t offset);
 
 extern unsigned long NSSDs;
 extern unsigned long NSSDTables;
+extern unsigned long NSMRBands;
 extern unsigned long SSD_SIZE;
 extern size_t BLCKSZ;
 extern size_t BNDSZ;
