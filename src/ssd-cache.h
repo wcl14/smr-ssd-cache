@@ -44,7 +44,8 @@ typedef enum
 	Most,
 	Most_Dirty,	
 	SCAN,
-    WA
+    WA,
+    MaxCold
 } SSDEvictionStrategy;
 
 extern size_t BNDSZ;

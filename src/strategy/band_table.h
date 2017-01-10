@@ -7,8 +7,8 @@
 #define size_t long
 typedef struct BandHashBucket
 {
-	long band_num;
-	long band_id;
+	long band_num;          // actual band # in SMR disk
+	long band_id;           // location in SSD cache line
 	struct BandHashBucket *next_item;
 } BandHashBucket;
 

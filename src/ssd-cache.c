@@ -11,6 +11,7 @@
 #include "strategy/most.h"
 #include "strategy/scan.h"
 #include "strategy/WA.h"
+#include "strategy/maxcold.h"
 static SSDBufferDesc *SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool * found);
 static void    *initStrategySSDBuffer(SSDEvictionStrategy strategy);
 static SSDBufferDesc *getSSDStrategyBuffer(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy);
@@ -134,6 +135,8 @@ initStrategySSDBuffer(SSDEvictionStrategy strategy)
 		initSSDBufferForSCAN();
 	else if (strategy == WA)
 		initSSDBufferForWA();
+	else if (strategy == MaxCold)
+        initSSDBufferForMaxCold();
 }
 
 static SSDBufferDesc *
@@ -153,6 +156,8 @@ getSSDStrategyBuffer(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy)
 		return getSCANBuffer(ssd_buf_tag);
 	else if (strategy == WA)
 		return getWABuffer(ssd_buf_tag);
+	else if (strategy == MaxCold)
+		return getMaxColdBuffer(ssd_buf_tag);
 }
 
 static void    *
@@ -170,6 +175,8 @@ hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy)
 		hitInSCANBuffer(ssd_buf_hdr);
 	else if (strategy == WA)
 		hitInWABuffer(ssd_buf_hdr);
+	else if (strategy == MaxCold)
+        hitInMaxColdBuffer(ssd_buf_hdr);
 }
 
 /*

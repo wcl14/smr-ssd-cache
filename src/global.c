@@ -13,8 +13,8 @@ unsigned long SSD_BUFFER_SIZE = 4096;
 unsigned long NSMRBands = 194180;		// 194180*(18MB+36MB)/2~5TB
 unsigned long NSMRBlocks = 2621952;		// 2621952*8KB~20GB
 //unsigned long NSSDs = 2621952;		// 2621952*8KB~20GB
-unsigned long NSSDs = 100000;
-unsigned long NSSDTables = 100000;
+unsigned long NSSDs = 10000;
+unsigned long NSSDTables = 10000;
 unsigned long NBANDTables = 2621952;
 /*unsigned long NSMRBands = 500;		// 569*36MB~20GB
 unsigned long NSMRBlocks = 500;		// 2621952*8KB~20GB
@@ -25,9 +25,13 @@ size_t SSD_SIZE = 4096;
 size_t BLCKSZ = 4096;
 size_t BNDSZ = 36*1024*1024;
 unsigned long INTERVALTIMELIMIT = 1000;
-unsigned long NSSDLIMIT = 500000;
-unsigned long NSSDCLEAN = 20000;
+//unsigned long NSSDLIMIT = 500000;
+//unsigned long NSSDCLEAN = 20000;
+unsigned long NSSDLIMIT = 10000;
+unsigned long NSSDCLEAN = 1;
 unsigned long WRITEAMPLIFICATION = 100;
+unsigned long NCOLDBAND = 100;
+unsigned long PERIODTIMES = 100000;
 //unsigned long NSSDLIMIT = 2500000;
 //unsigned long NSSDCLEAN = 100000;
 /*unsigned long INTERVALTIMELIMIT = 1000;
@@ -48,6 +52,7 @@ SSDEvictionStrategy EvictStrategy = Most;
 //SSDEvictionStrategy EvictStrategy = LRU;
 //SSDEvictionStrategy EvictStrategy = SCAN;
 //SSDEvictionStrategy EvictStrategy = WA;
+SSDEvictionStrategy EvictStrategy = MaxCold;
 //int BandOrBlock = 0;
 /*Block = 0, Band=1*/
 int 		    smr_fd;
@@ -61,6 +66,7 @@ unsigned long flush_ssd_blocks;
 //unsigned long write-fifo-num;
 //unsigned long write-ssd-num;
 unsigned long flush_fifo_times;
+unsigned long run_times;
 
 pthread_mutex_t free_ssd_mutex;
 pthread_mutex_t inner_ssd_hdr_mutex;

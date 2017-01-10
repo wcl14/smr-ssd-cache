@@ -277,10 +277,10 @@ GetSMROffsetInBandFromSSD(SSDDesc * ssd_hdr)
 	for (i = 0; i < band_size_num; i++) {
 		size = BNDSZ / 2 + i * 1024 * 1024;
 		if (total_size + size * num_each_size > offset)
-			return (offset - (offset - total_size) / size * size) / BLCKSZ;
+			return (offset - total_size - (offset - total_size) / size * size) / BLCKSZ;
 		total_size += size * num_each_size;
 	}
 
-	return -1;
+	return 0;
 	//return (ssd_hdr->ssd_tag.offset / BLCKSZ) % (actual_band_size / BLCKSZ);
 }
