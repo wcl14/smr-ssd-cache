@@ -53,7 +53,7 @@ ssd_buf_hdr_for_scan 指针->
 void output(){
 	SSDBufferDescForSCAN *ssd_buf_hdr_for_scan;
 	//ssd_buf_hdr_for_scan is a pointer
-	long i;
+	long i, j;
 	ssd_buf_hdr_for_scan = ssd_buffer_descriptors_for_scan;
 	
 	for (i = 0; i < NSSDBuffers; ssd_buf_hdr_for_scan++, i++) {
@@ -61,7 +61,7 @@ void output(){
       	  printf("next_scan %ld",ssd_buf_hdr_for_scan->next_scan);
       	  printf("last_scan %ld\n",ssd_buf_hdr_for_scan->last_scan);
 	}
-	for(int j = 0 ; j < NSSDBuffers; j++){
+	for(j = 0 ; j < NSSDBuffers; j++){
 	 printf("ssd_buf_tag no.%d tag is %ld\n",j,ssd_buffer_descriptors[j].ssd_buf_tag.offset);
 	}
 	printf("scanptr %ld\n",ssd_buffer_strategy_control_for_scan->scan_ptr);
