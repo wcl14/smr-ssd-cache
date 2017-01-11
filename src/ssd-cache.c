@@ -228,7 +228,7 @@ write_block(off_t offset, char *ssd_buffer)
 {
 	void           *ssd_buf_block;
 	bool		found;
-	int		returnCode;
+	int		returnCode = 0;
 
 	static SSDBufferTag ssd_buf_tag;
 	static SSDBufferDesc *ssd_buf_hdr;

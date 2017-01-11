@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "ssd-cache.h"
+#include "maxcold.h"
 #include "ssd_buf_table_for_coldmax_history.h"
 
 static bool isSamebuf(SSDBufferTag *, SSDBufferTag *);

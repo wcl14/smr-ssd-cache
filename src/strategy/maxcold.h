@@ -1,6 +1,5 @@
 #define DEBUG 0
 /* ---------------------------maxcold---------------------------- */
-#include <band_table.h>
 
 typedef struct
 {

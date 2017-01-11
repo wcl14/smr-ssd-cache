@@ -17,7 +17,7 @@
 
 int main()
 {
-    char trace_file_path[]="../test-10-2.txt";
+    char trace_file_path[]="../trace/wdev_0.csv.req";
 
 	initSSD();
     initSSDBuffer();
