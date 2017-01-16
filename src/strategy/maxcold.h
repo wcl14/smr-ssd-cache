@@ -7,6 +7,7 @@ typedef struct
 	long 		ssd_buf_id;				// ssd buffer location in shared buffer
     long        next_lru;               // to link used ssd as LRU
     long        last_lru;               // to link used ssd as LRU
+    long        next_freessd;           // to link free ssd
     unsigned long   hit_times;
 } SSDBufferDescForMaxColdHistory;
 
@@ -21,6 +22,8 @@ typedef struct
 {
     long        first_lru;          // Head of list of LRU
     long        last_lru;           // Tail of list of LRU
+    long        first_freessd;     // Head of list of free ssds
+    long        last_freessd;      // Tail of list of free ssds
     long        n_usedssds;
 } SSDBufferStrategyControlForMaxColdHistory;
 
@@ -42,6 +45,7 @@ typedef struct
     unsigned char ischosen;
 } BandDescForMaxColdNow;
 
+extern size_t   ZONESZ;
 extern unsigned long NBANDTables;
 extern unsigned long NSMRBands;
 extern unsigned long PERIODTIMES;
