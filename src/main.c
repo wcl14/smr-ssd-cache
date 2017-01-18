@@ -15,16 +15,37 @@
 #include "smr-simulator/smr-simulator.h"
 #include "trace2call.h"
 
-int main()
+int main(int argc,char **argv)
 {
-    char trace_file_path[]="../trace/wdev_0.csv.req";
+    char *trace_file_path[] = {"/home/trace/MS-Cambridge/wdev_0.csv.req", "/home/trace/MS-Cambridge/wdev_2.csv.req", "/home/trace/MS-Cambridge/rsrch_1.csv.req", "/home/trace/MS-Cambridge/rsrch_0.csv.req", "/home/trace/MS-Cambridge/src1_2.csv.req", "/home/trace/MS-Cambridge/prn_0.csv.req", "/home/trace/MS-Cambridge/ts_0.csv.req", "/home/trace/MS-Cambridge/mds_0.csv.req", "/home/trace/MS-Cambridge/stg_0.csv.req", "/home/trace/MS-Cambridge/hm_0.csv.req", "/home/trace/MS-Cambridge/web_0.csv.req", "/home/trace/production-MSN-FS-4k.req", "/home/trace/MS-Cambridge/usr_0.csv.req", "/home/trace/production-LiveMap-Backend-4K.req","/home/test.txt"};
+
+	if(argc == 7){
+                NSSDBuffers = atoi(argv[1]);
+                NSSDBufTables = atoi(argv[1]);
+                NSSDs = atoi(argv[2]);
+                NSSDTables = atoi(argv[2]);
+                NSSDLIMIT = atoi(argv[2]);
+                BandOrBlock = atoi(argv[3]);
+                SSD_BUFFER_SIZE = atoi(argv[4]);
+                ZONESZ = atoi(argv[4]);
+                if(atoi(argv[5]) == 1)
+                        EvictStrategy = LRU;
+                if(atoi(argv[5]) == 2)
+                        EvictStrategy = LRUofBand;
+                if(atoi(argv[5]) == 3)
+                        EvictStrategy = Most;
+        } else {
+                printf("parameters are wrong %d\n",argc);
+                exit(-1);
+        }
+
 
 	initSSD();
     initSSDBuffer();
     smr_fd = open(smr_device, O_RDWR|O_DIRECT);
     ssd_fd = open(ssd_device, O_RDWR);
     inner_ssd_fd = open(inner_ssd_device, O_RDWR|O_DIRECT);
-    trace_to_iocall(trace_file_path);
+    trace_to_iocall(trace_file_path[atoi(argv[6])]);
     close(smr_fd);
     close(ssd_fd);
     close(inner_ssd_fd);
