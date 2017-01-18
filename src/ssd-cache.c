@@ -172,29 +172,44 @@ read_block(off_t offset, char *ssd_buffer)
 	ssd_buf_tag.offset = offset;
 	if (DEBUG)
 		printf("[INFO] read():-------offset=%lu\n", offset);
-	ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found);
-	if (found) {
-		returnCode = pread(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
+	if (EvictStrategy == CMR) {
+		flush_bands++;
+		returnCode = pread(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, offset);
 		if (returnCode < 0) {
-			printf("[ERROR] read():-------read from smr: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
+			printf("[ERROR] read_block():-------read from smr: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
+			exit(-1);
+		}
+	} else if (EvictStrategy == SMR) {
+		returnCode = smrread(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_tag.offset);
+		if (returnCode < 0) {
+			printf("[ERROR] read_block():---------SMR\n");
 			exit(-1);
 		}
 	} else {
-		returnCode = smrread(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, offset);
-		//returnCode = pread(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, offset);
-		if (returnCode < 0) {
-			printf("[ERROR] read():-------read from smr: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
-			exit(-1);
+		ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found);
+		if (found) {
+			returnCode = pread(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
+			if (returnCode < 0) {
+				printf("[ERROR] read():-------read from smr: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
+				exit(-1);
+			}
+		} else {
+			returnCode = smrread(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, offset);
+			//returnCode = pread(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, offset);
+			if (returnCode < 0) {
+				printf("[ERROR] read():-------read from smr: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
+				exit(-1);
+			}
+			flush_ssd_blocks++;
+			//returnCode = pwrite(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
+			if (returnCode < 0) {
+				printf("[ERROR] read():-------write to ssd: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
+				exit(-1);
+			}
 		}
-		flush_ssd_blocks++;
-		//returnCode = pwrite(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
-		if (returnCode < 0) {
-			printf("[ERROR] read():-------write to ssd: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
-			exit(-1);
-		}
+		ssd_buf_hdr->ssd_buf_flag &= ~SSD_BUF_VALID;
+		ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_VALID;
 	}
-	ssd_buf_hdr->ssd_buf_flag &= ~SSD_BUF_VALID;
-	ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_VALID;
 }
 
 /*
@@ -213,16 +228,36 @@ write_block(off_t offset, char *ssd_buffer)
 	ssd_buf_tag.offset = offset;
 	if (DEBUG)
 		printf("[INFO] write():-------offset=%lu\n", offset);
-	ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found);
-	flush_ssd_blocks++;
-	if (flush_ssd_blocks % 10000 == 0)
-		printf("hit num:%lu   flush_ssd_blocks:%lu flush_fifo_times:%lu flush_fifo_blocks:%lu  flusd_bands:%lu\n ", hit_num, flush_ssd_blocks, flush_fifo_times, flush_fifo_blocks, flush_bands);
-	returnCode = pwrite(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
-	if (returnCode < 0) {
-		printf("[ERROR] write():-------write to ssd: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
-		exit(-1);
+	if (EvictStrategy == CMR) {
+		flush_bands++;
+		returnCode = pwrite(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, offset);
+		if (returnCode < 0) {
+			printf("[ERROR] write_block():-------write to smr: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
+			exit(-1);
+		}
+		returnCode = fsync(smr_fd);
+		if (returnCode < 0) {
+			printf("[ERROR] write_block():----------fsync\n");
+			exit(-1);
+		}
+	} else if (EvictStrategy == SMR) {
+		returnCode = smrwrite(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_tag.offset);
+		if (returnCode < 0) {
+			printf("[ERROR] write_block():---------SMR\n");
+			exit(-1);
+		}
+	} else {
+		ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found);
+		flush_ssd_blocks++;
+		if (flush_ssd_blocks % 10000 == 0)
+			printf("hit num:%lu   flush_ssd_blocks:%lu flush_fifo_times:%lu flush_fifo_blocks:%lu  flusd_bands:%lu\n ", hit_num, flush_ssd_blocks, flush_fifo_times, flush_fifo_blocks, flush_bands);
+		returnCode = pwrite(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
+		if (returnCode < 0) {
+			printf("[ERROR] write():-------write to ssd: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
+			exit(-1);
+		}
+		ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_VALID | SSD_BUF_DIRTY;
 	}
-	ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_VALID | SSD_BUF_DIRTY;
 }
 void
 read_band(off_t offset, char *ssd_buffer)
