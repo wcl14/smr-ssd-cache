@@ -44,6 +44,8 @@ typedef enum
 	Most,
 	Most_Dirty,	
 	SCAN,
+	CMR,
+	SMR,
     WA,
     MaxCold
 } SSDEvictionStrategy;

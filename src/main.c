@@ -25,7 +25,8 @@ int main(int argc,char **argv)
                 NSSDs = atoi(argv[2]);
                 NSSDTables = atoi(argv[2]);
                 NSSDLIMIT = atoi(argv[2]);
-                BandOrBlock = atoi(argv[3]);
+		PERIODTIMES = atoi(argv[2]);              	
+		BandOrBlock = atoi(argv[3]);
                 SSD_BUFFER_SIZE = atoi(argv[4]);
                 ZONESZ = atoi(argv[4]);
                 if(atoi(argv[5]) == 1)
@@ -34,7 +35,13 @@ int main(int argc,char **argv)
                         EvictStrategy = LRUofBand;
                 if(atoi(argv[5]) == 3)
                         EvictStrategy = Most;
-        } else {
+		if(atoi(argv[5]) == 4)
+			EvictStrategy = CMR;
+		if(atoi(argv[5]) == 5)
+                        EvictStrategy = SMR;
+		if(atoi(argv[5]) == 6)
+                        EvictStrategy = MaxCold;
+	} else {
                 printf("parameters are wrong %d\n",argc);
                 exit(-1);
         }
