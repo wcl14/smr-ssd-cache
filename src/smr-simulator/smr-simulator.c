@@ -35,19 +35,10 @@ initSSD()
 	for (i = 0; i < NSSDs; ssd_hdr++, i++) {
 		ssd_hdr->ssd_flag = 0;
 		ssd_hdr->ssd_id = i;
-		//ssd_hdr->usage_count = 0;
-		//ssd_hdr->next_freessd = i + 1;
 	}
-	//ssd_descriptors[NSSDs - 1].next_freessd = -1;
 	interval_time = 0;
 
-	//ssd_blocks = (char *)malloc(SSD_SIZE * NSSDs);
-	//printf("%d\n", sizeof(ssd_blocks));
-	//memset(ssd_blocks, 0, SSD_SIZE * NSSDs);
-
 	pthread_mutex_init(&free_ssd_mutex, NULL);
-	//pthread_mutex_init(&inner_ssd_hdr_mutex, NULL);
-	//pthread_mutex_init(&inner_ssd_table_mutex, NULL);
 
 	err = pthread_create(&freessd_tid, NULL, freeStrategySSD, NULL);
 	if (err != 0) {
@@ -80,9 +71,6 @@ smrread(int smr_fd, char *buffer, size_t size, off_t offset)
 				printf("[ERROR] smrread():-------read from inner ssd: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, ssd_hdr->ssd_id * BLCKSZ);
 				exit(-1);
 			}
-		    ssd_hdr->ssd_flag |= SSD_VALID;
-		    ssd_hdr->ssd_flag &= !SSD_DIRTY;
-			return returnCode;
 		} else {
 			returnCode = pread(smr_fd, buffer, BLCKSZ, offset + i * BLCKSZ);
 			if (returnCode < 0) {
@@ -138,11 +126,11 @@ getStrategySSD()
 		if (DEBUG)
 			printf("[INFO] getStrategySSD():--------ssd_strategy_control->n_usedssd=%ld\n", ssd_strategy_control->n_usedssd);
 	}
-	//allocatelock
+	/* allocatelock */
     pthread_mutex_lock(&free_ssd_mutex);
 	ssd_strategy_control->last_usedssd = (ssd_strategy_control->last_usedssd + 1) % NSSDs;
 	ssd_strategy_control->n_usedssd++;
-    //releaselock
+    /* releaselock */
     pthread_mutex_unlock(&free_ssd_mutex);
 
 	return &ssd_descriptors[ssd_strategy_control->last_usedssd];
@@ -161,7 +149,7 @@ freeStrategySSD()
 				printf("[INFO] freeStrategySSD():--------interval_time=%ld\n", interval_time);
 				printf("[INFO] freeStrategySSD():--------ssd_strategy_control->n_usedssd=%lu ssd_strategy_control->first_usedssd=%ld\n", ssd_strategy_control->n_usedssd, ssd_strategy_control->first_usedssd);
 			}
-			//allocatelock
+			/* allocatelock */
             pthread_mutex_lock(&free_ssd_mutex);
 			interval_time = 0;
 			for (i = ssd_strategy_control->first_usedssd; i < ssd_strategy_control->first_usedssd + NSSDCLEAN; i++) {
@@ -177,7 +165,7 @@ freeStrategySSD()
 			}
 			ssd_strategy_control->first_usedssd = (ssd_strategy_control->first_usedssd + NSSDCLEAN) % NSSDs;
 			ssd_strategy_control->n_usedssd -= NSSDCLEAN;
-			//releaselock
+			/* releaselock */
             pthread_mutex_unlock(&free_ssd_mutex);
 			if (DEBUG)
 				printf("[INFO] freeStrategySSD():--------after clean\n");
@@ -283,5 +271,4 @@ GetSMROffsetInBandFromSSD(SSDDesc * ssd_hdr)
 	}
 
 	return 0;
-	//return (ssd_hdr->ssd_tag.offset / BLCKSZ) % (actual_band_size / BLCKSZ);
 }
