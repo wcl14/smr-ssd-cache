@@ -3,6 +3,8 @@
 */smr-ssd-cache
 
 # data files
+*.req
+*.out
 *.txt
 */smr
 */ssd

@@ -37,6 +37,7 @@ typedef struct
 } SSDStrategyControl;
 
 extern unsigned long flush_bands;
+extern unsigned long flush_band_size;
 extern unsigned long flush_fifo_blocks;
 //extern unsigned long write-fifo-num;
 
