@@ -83,11 +83,9 @@ long ssdbuftableDelete(SSDBufferTag *ssd_buf_tag, unsigned long hash_code)
 		}
 		nowbucket = nowbucket->next_item;
 	}
-	//printf("not found2\n");
 	if (isSamebuf(&nowbucket->hash_key, ssd_buf_tag)) {
 		del_id = nowbucket->ssd_buf_id;
 	}
-	//printf("not found3\n");
 	if (nowbucket->next_item != NULL) {
 		delitem = nowbucket->next_item;
 		nowbucket->next_item = nowbucket->next_item->next_item;

@@ -24,13 +24,7 @@ unsigned long PERIODTIMES;
 char smr_device[] = "/Users/wangchunling/Software/code/smr-test/smr-ssd-cache/src/smr";
 char ssd_device[] = "/Users/wangchunling/Software/code/smr-test/smr-ssd-cache/src/ssd";
 char inner_ssd_device[] = "/Users/wangchunling/Software/code/smr-test/smr-ssd-cache/src/inner_ssd";
-//SSDEvictionStrategy EvictStrategy = CLOCK;
-//SSDEvictionStrategy EvictStrategy = LRUofBand;
 SSDEvictionStrategy EvictStrategy;
-//SSDEvictionStrategy EvictStrategy = LRU;
-//SSDEvictionStrategy EvictStrategy = SCAN;
-//SSDEvictionStrategy EvictStrategy = WA;
-//SSDEvictionStrategy EvictStrategy = MaxCold;
 int BandOrBlock;
 /*Block = 0, Band=1*/
 int 		    smr_fd;

@@ -105,15 +105,15 @@ initSSDBufferForMaxCold()
 	band_descriptors_for_maxcold_history = (BandDescForMaxColdHistory *) malloc(sizeof(BandDescForMaxColdHistory) * NSMRBands);
 	band_descriptors_for_maxcold_now = (BandDescForMaxColdNow *) malloc(sizeof(BandDescForMaxColdNow) * NSMRBands);
 
-	//At first, all data pages in SMR can be chosen for evict, and the strategy is actually LRU.
-			BandDescForMaxColdNow * band_hdr_for_maxcold_now;
+	/* At first, all data pages in SMR can be chosen for evict, and the strategy is actually LRU. */
+    BandDescForMaxColdNow * band_hdr_for_maxcold_now;
 	long		i;
 	band_hdr_for_maxcold_now = band_descriptors_for_maxcold_now;
 	for (i = 0; i < NSMRBands; band_hdr_for_maxcold_now++, i++) {
 		band_hdr_for_maxcold_now->ischosen = 1;
 	}
 
-    // init ssd_buffer_strategy_control_for_maxcold_now & ssd_buffer_descriptors_for_maxcold_now
+    /* init ssd_buffer_strategy_control_for_maxcold_now & ssd_buffer_descriptors_for_maxcold_now */
 	ssd_buffer_strategy_control_for_maxcold_now->first_lru = -1;
 	ssd_buffer_strategy_control_for_maxcold_now->last_lru = -1;
 	ssd_buffer_strategy_control_for_maxcold_now->n_usedssds = 0;
@@ -127,7 +127,7 @@ initSSDBufferForMaxCold()
 		ssd_buf_hdr_for_maxcold_now->last_lru = -1;
 	}
 	
-    // init ssd_buffer_strategy_control_for_maxcold_history & ssd_buffer_descriptors_for_maxcold_history
+    /* init ssd_buffer_strategy_control_for_maxcold_history & ssd_buffer_descriptors_for_maxcold_history */
     ssd_buffer_strategy_control_for_maxcold_history->first_lru = -1;
 	ssd_buffer_strategy_control_for_maxcold_history->last_lru = -1;
     ssd_buffer_strategy_control_for_maxcold_history->first_freessd = 0;

@@ -15,7 +15,7 @@ static volatile void *flushSSD(SSDDesc * ssd_hdr);
 /*
  * init inner ssd buffer hash table, strategy_control, buffer, work_mem
  */
-void 
+void
 initSSD()
 {
 	pthread_t	freessd_tid;
@@ -49,7 +49,7 @@ initSSD()
 	flush_fifo_blocks = 0;
 }
 
-int 
+int
 smrread(int smr_fd, char *buffer, size_t size, off_t offset)
 {
 	SSDTag		ssd_tag;
@@ -83,7 +83,7 @@ smrread(int smr_fd, char *buffer, size_t size, off_t offset)
 	return 0;
 }
 
-int 
+int
 smrwrite(int smr_fd, char *buffer, size_t size, off_t offset)
 {
 	SSDTag		ssd_tag;
@@ -127,11 +127,11 @@ getStrategySSD()
 			printf("[INFO] getStrategySSD():--------ssd_strategy_control->n_usedssd=%ld\n", ssd_strategy_control->n_usedssd);
 	}
 	/* allocatelock */
-    pthread_mutex_lock(&free_ssd_mutex);
+	pthread_mutex_lock(&free_ssd_mutex);
 	ssd_strategy_control->last_usedssd = (ssd_strategy_control->last_usedssd + 1) % NSSDs;
 	ssd_strategy_control->n_usedssd++;
-    /* releaselock */
-    pthread_mutex_unlock(&free_ssd_mutex);
+	/* releaselock */
+	pthread_mutex_unlock(&free_ssd_mutex);
 
 	return &ssd_descriptors[ssd_strategy_control->last_usedssd];
 }
@@ -150,23 +150,23 @@ freeStrategySSD()
 				printf("[INFO] freeStrategySSD():--------ssd_strategy_control->n_usedssd=%lu ssd_strategy_control->first_usedssd=%ld\n", ssd_strategy_control->n_usedssd, ssd_strategy_control->first_usedssd);
 			}
 			/* allocatelock */
-            pthread_mutex_lock(&free_ssd_mutex);
+			pthread_mutex_lock(&free_ssd_mutex);
 			interval_time = 0;
 			for (i = ssd_strategy_control->first_usedssd; i < ssd_strategy_control->first_usedssd + NSSDCLEAN; i++) {
 				if ((ssd_descriptors[i % NSSDs].ssd_flag & SSD_VALID) && (ssd_descriptors[i % NSSDs].ssd_flag & SSD_DIRTY)) {
 					flushSSD(&ssd_descriptors[i % NSSDs]);
 				}
 				if (ssd_descriptors[i % NSSDs].ssd_flag & SSD_VALID) {
-                    SSDTag  *ssd_tag = &ssd_descriptors[i % NSSDs].ssd_tag;
-                    unsigned long   hash_code = ssdtableHashcode(ssd_tag);
-                    ssd_descriptors[i % NSSDs].ssd_flag &= !SSD_VALID;
-                    ssdtableDelete(ssd_tag, hash_code);
-                }
+					SSDTag         *ssd_tag = &ssd_descriptors[i % NSSDs].ssd_tag;
+					unsigned long	hash_code = ssdtableHashcode(ssd_tag);
+					ssd_descriptors[i % NSSDs].ssd_flag &= !SSD_VALID;
+					ssdtableDelete(ssd_tag, hash_code);
+				}
 			}
 			ssd_strategy_control->first_usedssd = (ssd_strategy_control->first_usedssd + NSSDCLEAN) % NSSDs;
 			ssd_strategy_control->n_usedssd -= NSSDCLEAN;
 			/* releaselock */
-            pthread_mutex_unlock(&free_ssd_mutex);
+			pthread_mutex_unlock(&free_ssd_mutex);
 			if (DEBUG)
 				printf("[INFO] freeStrategySSD():--------after clean\n");
 		}
@@ -191,14 +191,12 @@ flushSSD(SSDDesc * ssd_hdr)
 		printf("[ERROR] flushSSD():-------posix_memalign\n");
 		exit(-1);
 	}
-
 	/* read whole band from smr */
 	returnCode = pread(smr_fd, band, band_size, band_offset);
 	if (returnCode < 0) {
 		printf("[ERROR] flushSSD():---------read from smr: fd=%d, errorcode=%d, offset=%lu\n", smr_fd, returnCode, band_offset);
 		exit(-1);
 	}
-
 	/* read cached pages from FIFO */
 	for (i = ssd_strategy_control->first_usedssd; i < ssd_strategy_control->first_usedssd + ssd_strategy_control->n_usedssd; i++) {
 		if (ssd_descriptors[i % NSSDs].ssd_flag & SSD_VALID && GetSMRBandNumFromSSD((&ssd_descriptors[i % NSSDs])->ssd_tag.offset) == BandNum) {
@@ -223,7 +221,7 @@ flushSSD(SSDDesc * ssd_hdr)
 	free(band);
 }
 
-unsigned long 
+unsigned long
 GetSMRActualBandSizeFromSSD(unsigned long offset)
 {
 	long		band_size_num = BNDSZ / 1024 / 1024 / 2 + 1;
@@ -239,7 +237,7 @@ GetSMRActualBandSizeFromSSD(unsigned long offset)
 	return 0;
 }
 
-unsigned long 
+unsigned long
 GetSMRBandNumFromSSD(unsigned long offset)
 {
 	long		band_size_num = BNDSZ / 1024 / 1024 / 2 + 1;
@@ -255,7 +253,7 @@ GetSMRBandNumFromSSD(unsigned long offset)
 	return 0;
 }
 
-off_t 
+off_t
 GetSMROffsetInBandFromSSD(SSDDesc * ssd_hdr)
 {
 	long		band_size_num = BNDSZ / 1024 / 1024 / 2 + 1;

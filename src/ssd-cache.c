@@ -12,14 +12,16 @@
 #include "strategy/scan.h"
 #include "strategy/WA.h"
 #include "strategy/maxcold.h"
+
 static SSDBufferDesc *SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool * found);
 static void    *initStrategySSDBuffer(SSDEvictionStrategy strategy);
 static SSDBufferDesc *getSSDStrategyBuffer(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy);
 static void    *hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy);
+
 /*
  * init buffer hash table, strategy_control, buffer, work_mem
  */
-void 
+void
 initSSDBuffer()
 {
 	initStrategySSDBuffer(EvictStrategy);
@@ -27,7 +29,6 @@ initSSDBuffer()
 
 	ssd_buffer_strategy_control = (SSDBufferStrategyControl *) malloc(sizeof(SSDBufferStrategyControl));
 	ssd_buffer_strategy_control->n_usedssd = 0;
-	//printf("usedssd: %ld\n", ssd_buffer_strategy_control->n_usedssd);
 	ssd_buffer_strategy_control->first_freessd = 0;
 	ssd_buffer_strategy_control->last_freessd = NSSDBuffers - 1;
 
@@ -41,31 +42,25 @@ initSSDBuffer()
 		ssd_buf_hdr->next_freessd = i + 1;
 	}
 	ssd_buffer_descriptors[NSSDBuffers - 1].next_freessd = -1;
-	//ssd_buffer_strategy_control->n_usedssd = 0;
 	hit_num = 0;
-	//miss_num = 0;
 	flush_ssd_blocks = 0;
-	//flush_fifo_times = 0;
-
-	//initStrategySSDBuffer(EvictStrategy);
 }
 
 void           *
 flushSSDBuffer(SSDBufferDesc * ssd_buf_hdr)
 {
-	char		*ssd_buffer;
+	char           *ssd_buffer;
 	int		returnCode;
-	if(BandOrBlock == 1){ 
-                SSD_BUFFER_SIZE=BNDSZ;
+	if (BandOrBlock == 1) {
+		SSD_BUFFER_SIZE = BNDSZ;
 		BLCKSZ = BNDSZ;
-        }
-
-	returnCode = posix_memalign(&ssd_buffer,512,sizeof(char)*BLCKSZ);
-        if(returnCode < 0){
-                printf("[ERROR] flushSSDBuffer():--------posix memalign\n");
-                free(ssd_buffer);
-                exit(-1);
-        }
+	}
+	returnCode = posix_memalign(&ssd_buffer, 512, sizeof(char) * BLCKSZ);
+	if (returnCode < 0) {
+		printf("[ERROR] flushSSDBuffer():--------posix memalign\n");
+		free(ssd_buffer);
+		exit(-1);
+	}
 	returnCode = pread(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
 	if (returnCode < 0) {
 		printf("[ERROR] flushSSDBuffer():-------read from ssd: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
@@ -84,7 +79,6 @@ flushSSDBuffer(SSDBufferDesc * ssd_buf_hdr)
 static SSDBufferDesc *
 SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool * found)
 {
-	//printf("ssdbufferalloc offset: %lu\n", ssd_buf_tag.offset);
 	SSDBufferDesc  *ssd_buf_hdr;
 	unsigned long	ssd_buf_hash = ssdbuftableHashcode(&ssd_buf_tag);
 	long		ssd_buf_id = ssdbuftableLookup(&ssd_buf_tag, ssd_buf_hash);
@@ -96,23 +90,8 @@ SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool * found)
 		hitInSSDBuffer(ssd_buf_hdr, EvictStrategy);
 		return ssd_buf_hdr;
 	}
-	//printf("test3\n");
-	//ssd_buf_hdr = (SSDBufferDesc *) malloc(sizeof(SSDBufferDesc));
-	//ssd_buf_hdr->ssd_buf_tag = ssd_buf_tag;
-	//printf("-----------offset: %lu\n", ssd_buf_hdr->ssd_buf_tag.offset);
-	//printf("%ld\n", ssd_buffer_strategy_control->n_usedssd);
-	//miss_num++;
 	ssd_buf_hdr = getSSDStrategyBuffer(ssd_buf_tag, EvictStrategy);
-	//printf("test2\n");
-	/*
-	 * unsigned char old_flag = ssd_buf_hdr->ssd_buf_flag; SSDBufferTag
-	 * old_tag = ssd_buf_hdr->ssd_buf_tag; if (DEBUG) printf("[INFO]
-	 * SSDBufferAlloc(): old_flag&SSD_BUF_DIRTY=%d\n", old_flag &
-	 * SSD_BUF_DIRTY); if (old_flag & SSD_BUF_DIRTY != 0) {
-	 * flushSSDBuffer(ssd_buf_hdr); } if (old_flag & SSD_BUF_VALID != 0)
-	 * { unsigned long old_hash = ssdbuftableHashcode(&old_tag);
-	 * ssdbuftableDelete(&old_tag, old_hash); }
-	 */
+
 	ssdbuftableInsert(&ssd_buf_tag, ssd_buf_hash, ssd_buf_hdr->ssd_buf_id);
 	ssd_buf_hdr->ssd_buf_flag &= ~(SSD_BUF_VALID | SSD_BUF_DIRTY);
 	ssd_buf_hdr->ssd_buf_tag = ssd_buf_tag;
@@ -136,14 +115,12 @@ initStrategySSDBuffer(SSDEvictionStrategy strategy)
 	else if (strategy == WA)
 		initSSDBufferForWA();
 	else if (strategy == MaxCold)
-        initSSDBufferForMaxCold();
+		initSSDBufferForMaxCold();
 }
 
 static SSDBufferDesc *
 getSSDStrategyBuffer(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy)
 {
-	//printf("ssd_cache_usedssd : %d\n", ssd_buffer_strategy_control->n_usedssd);
-	//flush_fifo_times++;
 	if (strategy == CLOCK)
 		return getCLOCKBuffer();
 	else if (strategy == LRU)
@@ -176,13 +153,13 @@ hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy)
 	else if (strategy == WA)
 		hitInWABuffer(ssd_buf_hdr);
 	else if (strategy == MaxCold)
-        hitInMaxColdBuffer(ssd_buf_hdr);
+		hitInMaxColdBuffer(ssd_buf_hdr);
 }
 
 /*
  * read--return the buf_id of buffer according to buf_tag
  */
-void 
+void
 read_block(off_t offset, char *ssd_buffer)
 {
 	void           *ssd_buf_block;
@@ -223,7 +200,7 @@ read_block(off_t offset, char *ssd_buffer)
 /*
  * write--return the buf_id of buffer according to buf_tag
  */
-void 
+void
 write_block(off_t offset, char *ssd_buffer)
 {
 	void           *ssd_buf_block;
@@ -238,7 +215,7 @@ write_block(off_t offset, char *ssd_buffer)
 		printf("[INFO] write():-------offset=%lu\n", offset);
 	ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found);
 	flush_ssd_blocks++;
-    if (flush_ssd_blocks % 10000 == 0)
+	if (flush_ssd_blocks % 10000 == 0)
 		printf("hit num:%lu   flush_ssd_blocks:%lu flush_fifo_times:%lu flush_fifo_blocks:%lu  flusd_bands:%lu\n ", hit_num, flush_ssd_blocks, flush_fifo_times, flush_fifo_blocks, flush_bands);
 	returnCode = pwrite(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
 	if (returnCode < 0) {
@@ -247,13 +224,12 @@ write_block(off_t offset, char *ssd_buffer)
 	}
 	ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_VALID | SSD_BUF_DIRTY;
 }
-void 
+void
 read_band(off_t offset, char *ssd_buffer)
 {
-	if(BandOrBlock == 1){ 
-                SSD_BUFFER_SIZE = BNDSZ;
-        }
-
+	if (BandOrBlock == 1) {
+		SSD_BUFFER_SIZE = BNDSZ;
+	}
 	printf("enter read_band\n");
 	void           *ssd_buf_block;
 	bool		found = 0;
@@ -263,19 +239,17 @@ read_band(off_t offset, char *ssd_buffer)
 	static SSDBufferDesc *ssd_buf_hdr;
 
 	ssd_buf_tag.offset = offset;
-	//Band
-		static SSDBufferTag band_tag;
+	static SSDBufferTag band_tag;
 	band_tag.offset = (offset / BNDSZ);
 	static SSDBufferTag hdr_tag;
 	hdr_tag.offset = (band_tag.offset) * BNDSZ;
 	size_t		new_offset = offset - hdr_tag.offset;
 	char           *band_buffer;
-	returnCode = posix_memalign(&band_buffer,512,sizeof(char)*BNDSZ);
-        if(returnCode<0){
-                printf("[ERROR] read_band():-------posix_memalign\n");
-                exit(-1);
-        }
-
+	returnCode = posix_memalign(&band_buffer, 512, sizeof(char) * BNDSZ);
+	if (returnCode < 0) {
+		printf("[ERROR] read_band():-------posix_memalign\n");
+		exit(-1);
+	}
 	printf("readband_tag%ld\n", band_tag.offset);
 	if (DEBUG)
 		printf("[INFO] read():-------offset=%lu\n", offset);
@@ -295,11 +269,6 @@ read_band(off_t offset, char *ssd_buffer)
 		}
 		flush_ssd_blocks++;
 		//returnCode = pwrite(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
-		/*
-		 * if(returnCode < 0) {            printf("[ERROR]
-		 * read():-------write to ssd: fd=%d, errorcode=%d,
-		 * offset=%lu\n", ssd_fd, returnCode, offset); exit(-1); }
-		 */
 		returnCode = pwrite(ssd_fd, band_buffer, BNDSZ, ssd_buf_hdr->ssd_buf_id * BNDSZ);
 		if (returnCode < 0) {
 			printf("[ERROR] read():-------write to ssd: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
@@ -309,13 +278,12 @@ read_band(off_t offset, char *ssd_buffer)
 	ssd_buf_hdr->ssd_buf_flag &= ~SSD_BUF_VALID;
 	ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_VALID;
 }
-void 
+void
 write_band(off_t offset, char *ssd_buffer)
 {
-	if(BandOrBlock == 1){ 
-                SSD_BUFFER_SIZE = BNDSZ;
-        }
-
+	if (BandOrBlock == 1) {
+		SSD_BUFFER_SIZE = BNDSZ;
+	}
 	void           *ssd_buf_block;
 	bool		found;
 	int		returnCode;
@@ -333,11 +301,11 @@ write_band(off_t offset, char *ssd_buffer)
 	if (DEBUG)
 		printf("[INFO] write():-------offset=%lu\n", offset);
 
-	returnCode = posix_memalign(&band_buffer,512,sizeof(char)*BNDSZ);
-        if(returnCode<0){
-                printf("[ERROR] write_band():-------posix_memalign\n");
-                exit(-1);
-        }
+	returnCode = posix_memalign(&band_buffer, 512, sizeof(char) * BNDSZ);
+	if (returnCode < 0) {
+		printf("[ERROR] write_band():-------posix_memalign\n");
+		exit(-1);
+	}
 	ssd_buf_hdr = SSDBufferAlloc(hdr_tag, &found);
 	flush_ssd_blocks++;
 	if (flush_ssd_blocks % 10000 == 0)
