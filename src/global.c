@@ -2,38 +2,36 @@
 #include "smr-simulator/smr-simulator.h"
 #include "main.h"
 
-int BandOrBlock = 1;
-/* Block = 0,Band =1*/
 
-unsigned long NSSDBuffers = 3560*5;
-unsigned long NSSDBufTables = 3560*5;
-unsigned long SSD_BUFFER_SIZE = 4096;
+unsigned long NSSDBuffers;
+unsigned long NSSDBufTables;
+unsigned long SSD_BUFFER_SIZE;
 unsigned long NSMRBands = 194180;		// 194180*(18MB+36MB)/2~5TB
 unsigned long NSMRBlocks = 2621952;		// 2621952*8KB~20GB
-unsigned long NSSDs = 3560;
-unsigned long NSSDTables = 3560;
+unsigned long NSSDs;
+unsigned long NSSDTables;
 unsigned long NBANDTables = 2621952;
 size_t SSD_SIZE = 4096;
 size_t BLCKSZ = 4096;
 size_t BNDSZ = 36*1024*1024;
-size_t ZONESZ = 2*1024*1024;
+size_t ZONESZ;
 unsigned long INTERVALTIMELIMIT = 100000000;
-unsigned long NSSDLIMIT = 3560;
+unsigned long NSSDLIMIT;
 unsigned long NSSDCLEAN = 1;
 unsigned long WRITEAMPLIFICATION = 100;
 unsigned long NCOLDBAND = 1;
-unsigned long PERIODTIMES = 3560;
+unsigned long PERIODTIMES;
 char smr_device[] = "/Users/wangchunling/Software/code/smr-test/smr-ssd-cache/src/smr";
 char ssd_device[] = "/Users/wangchunling/Software/code/smr-test/smr-ssd-cache/src/ssd";
 char inner_ssd_device[] = "/Users/wangchunling/Software/code/smr-test/smr-ssd-cache/src/inner_ssd";
 //SSDEvictionStrategy EvictStrategy = CLOCK;
 //SSDEvictionStrategy EvictStrategy = LRUofBand;
-SSDEvictionStrategy EvictStrategy = Most;
+SSDEvictionStrategy EvictStrategy;
 //SSDEvictionStrategy EvictStrategy = LRU;
 //SSDEvictionStrategy EvictStrategy = SCAN;
 //SSDEvictionStrategy EvictStrategy = WA;
-SSDEvictionStrategy EvictStrategy = MaxCold;
-//int BandOrBlock = 0;
+//SSDEvictionStrategy EvictStrategy = MaxCold;
+int BandOrBlock;
 /*Block = 0, Band=1*/
 int 		    smr_fd;
 int 		    ssd_fd;
