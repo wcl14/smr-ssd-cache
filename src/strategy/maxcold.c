@@ -357,7 +357,7 @@ pause_and_caculate_next_period_maxall()
 	i = 0;
 	unsigned long	total_cold = 0;
 	while ((i < NSMRBands) && (total_cold < NSSDLIMIT || i < NCOLDBAND)) {
-        printf("NSSDLIMIT=%ld, total_cold=%ld, band_num=%ld, current_cold_pages=%ld\n", NSSDLIMIT, total_cold, band_descriptors_for_maxcold_history[i].band_num, band_descriptors_for_maxcold_history[i].current_cold_pages);
+        //printf("NSSDLIMIT=%ld, total_cold=%ld, band_num=%ld, current_cold_pages=%ld\n", NSSDLIMIT, total_cold, band_descriptors_for_maxcold_history[i].band_num, band_descriptors_for_maxcold_history[i].current_cold_pages);
 		total_cold += band_descriptors_for_maxcold_history[i].current_cold_pages;
 		band_descriptors_for_maxcold_now[band_descriptors_for_maxcold_history[i].band_num].ischosen = 1;
 		i++;
@@ -432,7 +432,7 @@ getMaxColdBuffer(SSDBufferTag new_ssd_buf_tag)
 	if (DEBUG)
 		printf("[INFO] SSDBufferAlloc(): old_flag&SSD_BUF_DIRTY=%d\n", old_flag & SSD_BUF_DIRTY);
 	if (old_flag & SSD_BUF_DIRTY != 0) {
-        printf("in flush: ssd_buf_id=%ld, offset=%ld, band_num=%ld, zone_num=%ld\n", ssd_buf_hdr->ssd_buf_id, ssd_buf_hdr->ssd_buf_tag.offset, GetSMRBandNumFromSSD(ssd_buf_hdr->ssd_buf_tag.offset), GetSMRZoneNumFromSSD(ssd_buf_hdr->ssd_buf_tag.offset));
+        //printf("in flush: ssd_buf_id=%ld, offset=%ld, band_num=%ld, zone_num=%ld\n", ssd_buf_hdr->ssd_buf_id, ssd_buf_hdr->ssd_buf_tag.offset, GetSMRBandNumFromSSD(ssd_buf_hdr->ssd_buf_tag.offset), GetSMRZoneNumFromSSD(ssd_buf_hdr->ssd_buf_tag.offset));
 		flushSSDBuffer(ssd_buf_hdr);
 	}
 	if (old_flag & SSD_BUF_VALID != 0) {

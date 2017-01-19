@@ -18,7 +18,17 @@
 int
 main(int argc, char **argv)
 {
-	char           *trace_file_path[] = {"/home/trace/MS-Cambridge/wdev_0.csv.req", "/home/trace/MS-Cambridge/wdev_2.csv.req", "/home/trace/MS-Cambridge/rsrch_1.csv.req", "/home/trace/MS-Cambridge/rsrch_0.csv.req", "/home/trace/MS-Cambridge/src1_2.csv.req", "/home/trace/MS-Cambridge/prn_0.csv.req", "/home/trace/MS-Cambridge/ts_0.csv.req", "/home/trace/MS-Cambridge/mds_0.csv.req", "/home/trace/MS-Cambridge/stg_0.csv.req", "/home/trace/MS-Cambridge/hm_0.csv.req", "/home/trace/MS-Cambridge/web_0.csv.req", "/home/trace/production-MSN-FS-4k.req", "/home/trace/MS-Cambridge/usr_0.csv.req", "/home/trace/production-LiveMap-Backend-4K.req", "/home/test.txt"};
+	char           *trace_file_path[] = {"../trace/hm_0.csv.req", 
+                                         "../trace/production-LiveMap-Backend-4K.req",
+                                         "../trace/mds_0.csv.req", 
+                                         "../trace/prn_0.csv.req", 
+                                         "../trace/rsrch_0.csv.req", 
+                                         "../trace/src1_2.csv.req", 
+                                         "../trace/stg_0.csv.req", 
+                                         "../trace/ts_0.csv.req", 
+                                         "../trace/usr_0.csv.req", 
+                                         "../trace/wdev_0.csv.req", 
+                                         "../trace/web_0.csv.req"};
 
 	if (argc == 8) {
 		NSSDBuffers = atoi(argv[1]);
