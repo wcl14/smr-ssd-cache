@@ -67,14 +67,17 @@ main(int argc, char **argv)
 
 
 	initSSD();
-	initSSDBuffer();
-	smr_fd = open(smr_device, O_RDWR | O_DIRECT);
-	ssd_fd = open(ssd_device, O_RDWR);
-	inner_ssd_fd = open(inner_ssd_device, O_RDWR | O_DIRECT);
+    initSSDBuffer();
+    //smr_fd = open(smr_device, O_RDWR|O_DIRECT);
+    //ssd_fd = open(ssd_device, O_RDWR);
+    //inner_ssd_fd = open(inner_ssd_device, O_RDWR|O_DIRECT);
+    smr_fd = open(smr_device, O_RDWR|O_SYNC);
+    ssd_fd = open(ssd_device, O_RDWR);
+    inner_ssd_fd = open(inner_ssd_device, O_RDWR|O_SYNC);
 	trace_to_iocall(trace_file_path[atoi(argv[8])]);
-	close(smr_fd);
-	close(ssd_fd);
-	close(inner_ssd_fd);
-
+    close(smr_fd);
+    close(ssd_fd);
+    close(inner_ssd_fd);
+    
 	return 0;
 }

@@ -2,7 +2,6 @@
 #include "smr-simulator/smr-simulator.h"
 #include "main.h"
 
-
 unsigned long NSSDBuffers;
 unsigned long NSSDBufTables;
 unsigned long SSD_BUFFER_SIZE;
