@@ -1,3 +1,4 @@
+#include <sys/time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
@@ -17,6 +18,8 @@ static SSDBufferDesc *SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool * found);
 static void    *initStrategySSDBuffer(SSDEvictionStrategy strategy);
 static SSDBufferDesc *getSSDStrategyBuffer(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy);
 static void    *hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy);
+struct timeval tv_begin_temp, tv_now_temp;
+struct timezone tz_begin_temp, tz_now_temp;
 
 /*
  * init buffer hash table, strategy_control, buffer, work_mem
@@ -44,6 +47,10 @@ initSSDBuffer()
 	ssd_buffer_descriptors[NSSDBuffers - 1].next_freessd = -1;
 	hit_num = 0;
 	flush_ssd_blocks = 0;
+	read_ssd_blocks = 0;
+	time_read_ssd = 0.0;
+	time_write_ssd = 0.0;
+	read_hit_num;
 }
 
 void           *
@@ -61,11 +68,16 @@ flushSSDBuffer(SSDBufferDesc * ssd_buf_hdr)
 		free(ssd_buffer);
 		exit(-1);
 	}
+	gettimeofday(&tv_begin_temp, &tz_begin_temp);
+        time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
 	returnCode = pread(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
 	if (returnCode < 0) {
 		printf("[ERROR] flushSSDBuffer():-------read from ssd: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
 		exit(-1);
 	}
+	gettimeofday(&tv_now_temp, &tz_now_temp);
+	time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
+	time_read_ssd = time_now_temp - time_begin_temp;
 	returnCode = smrwrite(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_tag.offset);
 	//returnCode = pwrite(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_tag.offset);
 	if (returnCode < 0) {
@@ -173,7 +185,7 @@ read_block(off_t offset, char *ssd_buffer)
 	if (DEBUG)
 		printf("[INFO] read():-------offset=%lu\n", offset);
 	if (EvictStrategy == CMR) {
-		flush_bands++;
+		read_smr_blocks++;
 		returnCode = pread(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, offset);
 		if (returnCode < 0) {
 			printf("[ERROR] read_block():-------read from smr: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
@@ -188,11 +200,17 @@ read_block(off_t offset, char *ssd_buffer)
 	} else {
 		ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found);
 		if (found) {
+			read_hit_num++;
+			gettimeofday(&tv_begin_temp, &tz_begin_temp);
+		        time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
 			returnCode = pread(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
 			if (returnCode < 0) {
 				printf("[ERROR] read():-------read from smr: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
 				exit(-1);
 			}
+		        gettimeofday(&tv_now_temp, &tz_now_temp);
+		        time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
+        		time_read_ssd = time_now_temp - time_begin_temp;
 		} else {
 			returnCode = smrread(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, offset);
 			//returnCode = pread(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, offset);
@@ -201,11 +219,16 @@ read_block(off_t offset, char *ssd_buffer)
 				exit(-1);
 			}
 			flush_ssd_blocks++;
-			//returnCode = pwrite(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
+			gettimeofday(&tv_begin_temp, &tz_begin_temp);
+        time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
+			returnCode = pwrite(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
 			if (returnCode < 0) {
 				printf("[ERROR] read():-------write to ssd: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
 				exit(-1);
 			}
+			gettimeofday(&tv_now_temp, &tz_now_temp);
+                        time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
+                        time_write_ssd = time_now_temp - time_begin_temp;	
 		}
 		ssd_buf_hdr->ssd_buf_flag &= ~SSD_BUF_VALID;
 		ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_VALID;
@@ -248,14 +271,21 @@ write_block(off_t offset, char *ssd_buffer)
 		}
 	} else {
 		ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found);
+		if(found)
+			hit_num++;
 		flush_ssd_blocks++;
 		if (flush_ssd_blocks % 10000 == 0)
 			printf("hit num:%lu   flush_ssd_blocks:%lu flush_fifo_times:%lu flush_fifo_blocks:%lu  flusd_bands:%lu\n ", hit_num, flush_ssd_blocks, flush_fifo_times, flush_fifo_blocks, flush_bands);
+		gettimeofday(&tv_begin_temp, &tz_begin_temp);
+        	time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;		
 		returnCode = pwrite(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
 		if (returnCode < 0) {
 			printf("[ERROR] write():-------write to ssd: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
 			exit(-1);
 		}
+		gettimeofday(&tv_now_temp, &tz_now_temp);
+	        time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
+        	time_write_ssd = time_now_temp - time_begin_temp;
 		ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_VALID | SSD_BUF_DIRTY;
 	}
 }
@@ -303,7 +333,7 @@ read_band(off_t offset, char *ssd_buffer)
 			exit(-1);
 		}
 		flush_ssd_blocks++;
-		//returnCode = pwrite(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
+		returnCode = pwrite(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
 		returnCode = pwrite(ssd_fd, band_buffer, BNDSZ, ssd_buf_hdr->ssd_buf_id * BNDSZ);
 		if (returnCode < 0) {
 			printf("[ERROR] read():-------write to ssd: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);

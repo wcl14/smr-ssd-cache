@@ -39,6 +39,13 @@ typedef struct
 extern unsigned long flush_bands;
 extern unsigned long flush_band_size;
 extern unsigned long flush_fifo_blocks;
+extern unsigned long read_fifo_blocks;
+extern unsigned long read_smr_blocks;
+extern unsigned long read_smr_bands;
+extern double time_read_fifo;
+extern double time_write_fifo;
+extern double time_read_smr;
+extern double time_write_smr;
 //extern unsigned long write-fifo-num;
 
 extern SSDDesc		*ssd_descriptors;
