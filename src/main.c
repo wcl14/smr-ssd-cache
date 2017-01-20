@@ -52,6 +52,8 @@ main(int argc, char **argv)
 			EvictStrategy = SMR;
 		if (atoi(argv[6]) == 6)
 			EvictStrategy = MaxCold;
+		if (atoi(argv[6]) == 7)
+			EvictStrategy = MaxAll;
 	} else {
 		printf("parameters are wrong %d\n", argc);
 		exit(-1);

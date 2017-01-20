@@ -47,7 +47,8 @@ typedef enum
 	CMR,
 	SMR,
     WA,
-    MaxCold
+    MaxCold,
+    MaxAll
 } SSDEvictionStrategy;
 
 extern size_t BNDSZ;

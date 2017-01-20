@@ -128,6 +128,8 @@ initStrategySSDBuffer(SSDEvictionStrategy strategy)
 		initSSDBufferForWA();
 	else if (strategy == MaxCold)
 		initSSDBufferForMaxCold();
+	else if (strategy == MaxAll)
+		initSSDBufferForMaxCold();
 }
 
 static SSDBufferDesc *
@@ -146,7 +148,9 @@ getSSDStrategyBuffer(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy)
 	else if (strategy == WA)
 		return getWABuffer(ssd_buf_tag);
 	else if (strategy == MaxCold)
-		return getMaxColdBuffer(ssd_buf_tag);
+		return getMaxColdBuffer(ssd_buf_tag, strategy);
+	else if (strategy == MaxAll)
+		return getMaxColdBuffer(ssd_buf_tag, strategy);
 }
 
 static void    *
@@ -165,6 +169,8 @@ hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy)
 	else if (strategy == WA)
 		hitInWABuffer(ssd_buf_hdr);
 	else if (strategy == MaxCold)
+		hitInMaxColdBuffer(ssd_buf_hdr);
+	else if (strategy == MaxAll)
 		hitInMaxColdBuffer(ssd_buf_hdr);
 }
 
@@ -276,8 +282,6 @@ write_block(off_t offset, char *ssd_buffer)
 		}
 	} else {
 		ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found);
-		if(found)
-			hit_num++;
 		flush_ssd_blocks++;
 		if (flush_ssd_blocks % 10000 == 0)
 			printf("hit num:%lu   flush_ssd_blocks:%lu flush_fifo_times:%lu flush_fifo_blocks:%lu  flusd_bands:%lu\n ", hit_num, flush_ssd_blocks, flush_fifo_times, flush_fifo_blocks, flush_bands);

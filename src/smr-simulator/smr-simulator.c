@@ -12,8 +12,8 @@
 static SSDDesc *getStrategySSD();
 static void    *freeStrategySSD();
 static volatile void *flushSSD(SSDDesc * ssd_hdr);
-struct timeval tv_begin_temp, tv_now_temp;
-struct timezone tz_begin_temp, tz_now_temp;
+struct timeval	tv_begin_temp, tv_now_temp;
+struct timezone	tz_begin_temp, tz_now_temp;
 
 /*
  * init inner ssd buffer hash table, strategy_control, buffer, work_mem
@@ -78,27 +78,27 @@ smrread(int smr_fd, char *buffer, size_t size, off_t offset)
 			ssd_hdr = &ssd_descriptors[ssd_id];
 			read_fifo_blocks++;
 			gettimeofday(&tv_begin_temp, &tz_begin_temp);
-        		time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
+			time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
 			returnCode = pread(inner_ssd_fd, buffer, BLCKSZ, ssd_hdr->ssd_id * BLCKSZ);
 			if (returnCode < 0) {
 				printf("[ERROR] smrread():-------read from inner ssd: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, ssd_hdr->ssd_id * BLCKSZ);
 				exit(-1);
 			}
 			gettimeofday(&tv_now_temp, &tz_now_temp);
-		        time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
-		        time_read_fifo = time_now_temp - time_begin_temp;
+			time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
+			time_read_fifo = time_now_temp - time_begin_temp;
 		} else {
 			read_smr_blocks++;
 			gettimeofday(&tv_begin_temp, &tz_begin_temp);
-        		time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
+			time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
 			returnCode = pread(smr_fd, buffer, BLCKSZ, offset + i * BLCKSZ);
 			if (returnCode < 0) {
 				printf("[ERROR] smrread():-------read from smr disk: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, offset + i * BLCKSZ);
 				exit(-1);
 			}
 			gettimeofday(&tv_now_temp, &tz_now_temp);
-		        time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
-        		time_read_smr = time_now_temp - time_begin_temp;
+			time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
+			time_read_smr = time_now_temp - time_begin_temp;
 		}
 	}
 
@@ -111,7 +111,7 @@ smrwrite(int smr_fd, char *buffer, size_t size, off_t offset)
 	SSDTag		ssd_tag;
 	SSDDesc        *ssd_hdr;
 	long		i;
-	int		returnCode;
+	int		returnCode = 0;
 	long		ssd_hash;
 	long		ssd_id;
 
@@ -130,20 +130,20 @@ smrwrite(int smr_fd, char *buffer, size_t size, off_t offset)
 		ssd_hdr->ssd_tag = ssd_tag;
 		flush_fifo_blocks++;
 		gettimeofday(&tv_begin_temp, &tz_begin_temp);
-	        time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
+		time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
 		returnCode = pwrite(inner_ssd_fd, buffer, BLCKSZ, ssd_hdr->ssd_id * BLCKSZ);
 		if (returnCode < 0) {
 			printf("[ERROR] smrwrite():-------write to smr disk: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, offset + i * BLCKSZ);
 			exit(-1);
-		}		
+		}
 		returnCode = fsync(inner_ssd_fd);
-                if (returnCode < 0) {
-                        printf("[ERROR] smrwrite():----------fsync\n");
-                        exit(-1);
-                }
+		if (returnCode < 0) {
+			printf("[ERROR] smrwrite():----------fsync\n");
+			exit(-1);
+		}
 		gettimeofday(&tv_now_temp, &tz_now_temp);
-        	time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
-        	time_write_fifo = time_now_temp - time_begin_temp;
+		time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
+		time_write_fifo = time_now_temp - time_begin_temp;
 	}
 
 }
@@ -188,12 +188,6 @@ freeStrategySSD()
 				if ((ssd_descriptors[i % NSSDs].ssd_flag & SSD_VALID) && (ssd_descriptors[i % NSSDs].ssd_flag & SSD_DIRTY)) {
 					flushSSD(&ssd_descriptors[i % NSSDs]);
 				}
-				if (ssd_descriptors[i % NSSDs].ssd_flag & SSD_VALID) {
-					SSDTag         *ssd_tag = &ssd_descriptors[i % NSSDs].ssd_tag;
-					unsigned long	hash_code = ssdtableHashcode(ssd_tag);
-					ssd_descriptors[i % NSSDs].ssd_flag &= !SSD_VALID;
-					ssdtableDelete(ssd_tag, hash_code);
-				}
 			}
 			ssd_strategy_control->first_usedssd = (ssd_strategy_control->first_usedssd + NSSDCLEAN) % NSSDs;
 			ssd_strategy_control->n_usedssd -= NSSDCLEAN;
@@ -209,7 +203,6 @@ static volatile void *
 flushSSD(SSDDesc * ssd_hdr)
 {
 	long		i;
-	unsigned long	actual_band_size;
 	int		returnCode;
 	char		buffer    [BLCKSZ];
 	char           *band;
@@ -226,31 +219,35 @@ flushSSD(SSDDesc * ssd_hdr)
 	/* read whole band from smr */
 	read_smr_bands++;
 	gettimeofday(&tv_begin_temp, &tz_begin_temp);
-        time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
+	time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
 	returnCode = pread(smr_fd, band, band_size, band_offset);
 	if (returnCode < 0) {
 		printf("[ERROR] flushSSD():---------read from smr: fd=%d, errorcode=%d, offset=%lu\n", smr_fd, returnCode, band_offset);
 		exit(-1);
 	}
 	gettimeofday(&tv_now_temp, &tz_now_temp);
-        time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
-        time_read_smr = time_now_temp - time_begin_temp;
+	time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
+	time_read_smr = time_now_temp - time_begin_temp;
 	/* read cached pages from FIFO */
 	for (i = ssd_strategy_control->first_usedssd; i < ssd_strategy_control->first_usedssd + ssd_strategy_control->n_usedssd; i++) {
 		if (ssd_descriptors[i % NSSDs].ssd_flag & SSD_VALID && GetSMRBandNumFromSSD((&ssd_descriptors[i % NSSDs])->ssd_tag.offset) == BandNum) {
 			ssd_descriptors[i % NSSDs].ssd_flag &= !SSD_DIRTY;
 			Offset = GetSMROffsetInBandFromSSD(&ssd_descriptors[i % NSSDs]);
+			SSDTag         *ssd_tag = &ssd_descriptors[i % NSSDs].ssd_tag;
+			unsigned long	hash_code = ssdtableHashcode(ssd_tag);
+			ssd_descriptors[i % NSSDs].ssd_flag &= !SSD_VALID;
+			ssdtableDelete(ssd_tag, hash_code);
 			read_fifo_blocks++;
 			gettimeofday(&tv_begin_temp, &tz_begin_temp);
-        		time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
+			time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
 			returnCode = pread(inner_ssd_fd, band + Offset * BLCKSZ, BLCKSZ, ssd_descriptors[i % NSSDs].ssd_id * BLCKSZ);
 			if (returnCode < 0) {
 				printf("[ERROR] flushSSD():-------read from inner ssd: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, ssd_descriptors[i % NSSDs].ssd_id * BLCKSZ);
 				exit(-1);
 			}
 			gettimeofday(&tv_now_temp, &tz_now_temp);
-		        time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
-		        time_read_fifo = time_now_temp - time_begin_temp;	
+			time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
+			time_read_fifo = time_now_temp - time_begin_temp;
 		}
 	}
 
@@ -258,20 +255,20 @@ flushSSD(SSDDesc * ssd_hdr)
 	flush_bands++;
 	flush_band_size += band_size;
 	gettimeofday(&tv_begin_temp, &tz_begin_temp);
-        time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;	
+	time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
 	returnCode = pwrite(smr_fd, band, band_size, band_offset);
 	if (returnCode < 0) {
 		printf("[ERROR] flushSSD():-------write to smr: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, band_offset);
 		exit(-1);
 	}
 	returnCode = fsync(smr_fd);
-        if (returnCode < 0) {
-        	printf("[ERROR] write_block():----------fsync\n");
-                exit(-1);
-        }
+	if (returnCode < 0) {
+		printf("[ERROR] write_block():----------fsync\n");
+		exit(-1);
+	}
 	gettimeofday(&tv_now_temp, &tz_now_temp);
-        time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
-        time_write_smr = time_now_temp - time_begin_temp;
+	time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
+	time_write_smr = time_now_temp - time_begin_temp;
 	free(band);
 }
 

@@ -37,6 +37,7 @@ typedef struct
 typedef struct
 {
     unsigned long band_num;
+    unsigned long current_pages;
     unsigned long current_cold_pages;
 } BandDescForMaxColdHistory;
 
@@ -63,5 +64,5 @@ BandDescForMaxColdHistory *band_descriptors_for_maxcold_history;
 BandDescForMaxColdNow *band_descriptors_for_maxcold_now;
 
 extern void initSSDBufferForMaxCold();
-extern SSDBufferDesc *getMaxColdBuffer();
+extern SSDBufferDesc *getMaxColdBuffer(SSDBufferTag, SSDEvictionStrategy);
 extern void *hitInMaxColdBuffer(SSDBufferDesc *);
