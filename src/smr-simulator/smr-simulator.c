@@ -136,7 +136,7 @@ smrwrite(int smr_fd, char *buffer, size_t size, off_t offset)
 			printf("[ERROR] smrwrite():-------write to smr disk: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, offset + i * BLCKSZ);
 			exit(-1);
 		}
-		returnCode = fsync(inner_ssd_fd);
+		//returnCode = fsync(inner_ssd_fd);
 		if (returnCode < 0) {
 			printf("[ERROR] smrwrite():----------fsync\n");
 			exit(-1);
@@ -261,7 +261,7 @@ flushSSD(SSDDesc * ssd_hdr)
 		printf("[ERROR] flushSSD():-------write to smr: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, band_offset);
 		exit(-1);
 	}
-	returnCode = fsync(smr_fd);
+	//returnCode = fsync(smr_fd);
 	if (returnCode < 0) {
 		printf("[ERROR] write_block():----------fsync\n");
 		exit(-1);
