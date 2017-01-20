@@ -226,6 +226,11 @@ read_block(off_t offset, char *ssd_buffer)
 				printf("[ERROR] read():-------write to ssd: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
 				exit(-1);
 			}
+			returnCode = fsync(ssd_fd);
+                	if (returnCode < 0) {
+                	        printf("[ERROR] write_block():----------fsync\n");
+                	        exit(-1);
+                	}
 			gettimeofday(&tv_now_temp, &tz_now_temp);
                         time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
                         time_write_ssd = time_now_temp - time_begin_temp;	
@@ -283,6 +288,11 @@ write_block(off_t offset, char *ssd_buffer)
 			printf("[ERROR] write():-------write to ssd: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
 			exit(-1);
 		}
+		returnCode = fsync(ssd_fd);
+                if (returnCode < 0) {
+                        printf("[ERROR] write_block():----------fsync\n");
+                        exit(-1);
+                }
 		gettimeofday(&tv_now_temp, &tz_now_temp);
 	        time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
         	time_write_ssd = time_now_temp - time_begin_temp;

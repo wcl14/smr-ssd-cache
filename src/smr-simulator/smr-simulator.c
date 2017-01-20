@@ -135,7 +135,12 @@ smrwrite(int smr_fd, char *buffer, size_t size, off_t offset)
 		if (returnCode < 0) {
 			printf("[ERROR] smrwrite():-------write to smr disk: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, offset + i * BLCKSZ);
 			exit(-1);
-		}
+		}		
+		returnCode = fsync(inner_ssd_fd);
+                if (returnCode < 0) {
+                        printf("[ERROR] smrwrite():----------fsync\n");
+                        exit(-1);
+                }
 		gettimeofday(&tv_now_temp, &tz_now_temp);
         	time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
         	time_write_fifo = time_now_temp - time_begin_temp;
@@ -259,6 +264,11 @@ flushSSD(SSDDesc * ssd_hdr)
 		printf("[ERROR] flushSSD():-------write to smr: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, band_offset);
 		exit(-1);
 	}
+	returnCode = fsync(smr_fd);
+        if (returnCode < 0) {
+        	printf("[ERROR] write_block():----------fsync\n");
+                exit(-1);
+        }
 	gettimeofday(&tv_now_temp, &tz_now_temp);
         time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
         time_write_smr = time_now_temp - time_begin_temp;
