@@ -37,8 +37,10 @@ typedef struct
 typedef struct
 {
     unsigned long band_num;
-    unsigned long current_pages;
-    unsigned long current_cold_pages;
+    long current_hits;
+    long current_pages;
+    long current_cold_pages;
+    long to_sort;
 } BandDescForMaxColdHistory;
 
 typedef struct

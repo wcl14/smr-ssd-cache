@@ -54,6 +54,10 @@ main(int argc, char **argv)
 			EvictStrategy = MaxCold;
 		if (atoi(argv[6]) == 7)
 			EvictStrategy = MaxAll;
+		if (atoi(argv[6]) == 8)
+			EvictStrategy = AvgBandHot;
+		if (atoi(argv[6]) == 9)
+			EvictStrategy = HotDivSize;
 	} else {
 		printf("parameters are wrong %d\n", argc);
 		exit(-1);

@@ -6,7 +6,7 @@
 unsigned long NSSDBuffers;
 unsigned long NSSDBufTables;
 unsigned long SSD_BUFFER_SIZE;
-unsigned long NSMRBands = 194180;		// 194180*(18MB+36MB)/2~5TB
+unsigned long NSMRBands = 19418000;		// 194180*(18MB+36MB)/2~5TB
 unsigned long NSMRBlocks = 2621952;		// 2621952*8KB~20GB
 unsigned long NSSDs;
 unsigned long NSSDTables;

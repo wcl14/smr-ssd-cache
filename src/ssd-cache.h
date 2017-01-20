@@ -48,7 +48,9 @@ typedef enum
 	SMR,
     WA,
     MaxCold,
-    MaxAll
+    MaxAll,
+    AvgBandHot,
+    HotDivSize
 } SSDEvictionStrategy;
 
 extern size_t BNDSZ;

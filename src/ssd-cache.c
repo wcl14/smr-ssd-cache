@@ -130,6 +130,10 @@ initStrategySSDBuffer(SSDEvictionStrategy strategy)
 		initSSDBufferForMaxCold();
 	else if (strategy == MaxAll)
 		initSSDBufferForMaxCold();
+	else if (strategy == AvgBandHot)
+		initSSDBufferForMaxCold();
+	else if (strategy == HotDivSize)
+		initSSDBufferForMaxCold();
 }
 
 static SSDBufferDesc *
@@ -151,6 +155,10 @@ getSSDStrategyBuffer(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy)
 		return getMaxColdBuffer(ssd_buf_tag, strategy);
 	else if (strategy == MaxAll)
 		return getMaxColdBuffer(ssd_buf_tag, strategy);
+	else if (strategy == AvgBandHot)
+		return getMaxColdBuffer(ssd_buf_tag, strategy);
+	else if (strategy == HotDivSize)
+		return getMaxColdBuffer(ssd_buf_tag, strategy);
 }
 
 static void    *
@@ -171,6 +179,10 @@ hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy)
 	else if (strategy == MaxCold)
 		hitInMaxColdBuffer(ssd_buf_hdr);
 	else if (strategy == MaxAll)
+		hitInMaxColdBuffer(ssd_buf_hdr);
+	else if (strategy == AvgBandHot)
+		hitInMaxColdBuffer(ssd_buf_hdr);
+	else if (strategy == HotDivSize)
 		hitInMaxColdBuffer(ssd_buf_hdr);
 }
 
