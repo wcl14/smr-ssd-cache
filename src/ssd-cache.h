@@ -57,6 +57,12 @@ extern SSDBufferHashBucket	*ssd_buffer_hashtable;
 extern SSDBufferStrategyControl *ssd_buffer_strategy_control;
 extern unsigned long hit_num;
 extern unsigned long flush_ssd_blocks;
+extern unsigned long read_ssd_blocks;
+extern double time_read_ssd;
+extern double time_write_ssd;
+extern double time_begin_temp;
+extern double time_now_temp;
+extern unsigned long read_hit_num;
 //extern unsigned long write-ssd-num;
 //extern unsigned long flush_fifo_times;
 
