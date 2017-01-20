@@ -79,7 +79,7 @@ smrread(int smr_fd, char *buffer, size_t size, off_t offset)
 			read_fifo_blocks++;
 			gettimeofday(&tv_begin_temp, &tz_begin_temp);
 			time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
-			returnCode = pread(inner_ssd_fd, buffer, BLCKSZ, ssd_hdr->ssd_id * BLCKSZ);
+			//returnCode = pread(inner_ssd_fd, buffer, BLCKSZ, ssd_hdr->ssd_id * BLCKSZ);
 			if (returnCode < 0) {
 				printf("[ERROR] smrread():-------read from inner ssd: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, ssd_hdr->ssd_id * BLCKSZ);
 				exit(-1);
@@ -91,7 +91,7 @@ smrread(int smr_fd, char *buffer, size_t size, off_t offset)
 			read_smr_blocks++;
 			gettimeofday(&tv_begin_temp, &tz_begin_temp);
 			time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
-			returnCode = pread(smr_fd, buffer, BLCKSZ, offset + i * BLCKSZ);
+			//returnCode = pread(smr_fd, buffer, BLCKSZ, offset + i * BLCKSZ);
 			if (returnCode < 0) {
 				printf("[ERROR] smrread():-------read from smr disk: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, offset + i * BLCKSZ);
 				exit(-1);
@@ -134,7 +134,7 @@ smrwrite(int smr_fd, char *buffer, size_t size, off_t offset)
 		flush_fifo_blocks++;
 		gettimeofday(&tv_begin_temp, &tz_begin_temp);
 		time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
-		returnCode = pwrite(inner_ssd_fd, buffer, BLCKSZ, ssd_hdr->ssd_id * BLCKSZ);
+		//returnCode = pwrite(inner_ssd_fd, buffer, BLCKSZ, ssd_hdr->ssd_id * BLCKSZ);
 		if (returnCode < 0) {
 			printf("[ERROR] smrwrite():-------write to smr disk: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, offset + i * BLCKSZ);
 			exit(-1);
@@ -226,7 +226,7 @@ flushSSD(SSDDesc * ssd_hdr)
 	read_smr_bands++;
 	gettimeofday(&tv_begin_temp, &tz_begin_temp);
 	time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
-	returnCode = pread(smr_fd, band, band_size, band_offset);
+	//returnCode = pread(smr_fd, band, band_size, band_offset);
 	if (returnCode < 0) {
 		printf("[ERROR] flushSSD():---------read from smr: fd=%d, errorcode=%d, offset=%lu\n", smr_fd, returnCode, band_offset);
 		exit(-1);
@@ -246,7 +246,7 @@ flushSSD(SSDDesc * ssd_hdr)
 			read_fifo_blocks++;
 			gettimeofday(&tv_begin_temp, &tz_begin_temp);
 			time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
-			returnCode = pread(inner_ssd_fd, band + Offset * BLCKSZ, BLCKSZ, ssd_descriptors[i % NSSDs].ssd_id * BLCKSZ);
+			//returnCode = pread(inner_ssd_fd, band + Offset * BLCKSZ, BLCKSZ, ssd_descriptors[i % NSSDs].ssd_id * BLCKSZ);
 			if (returnCode < 0) {
 				printf("[ERROR] flushSSD():-------read from inner ssd: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, ssd_descriptors[i % NSSDs].ssd_id * BLCKSZ);
 				exit(-1);
@@ -262,7 +262,7 @@ flushSSD(SSDDesc * ssd_hdr)
 	flush_band_size += band_size;
 	gettimeofday(&tv_begin_temp, &tz_begin_temp);
 	time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
-	returnCode = pwrite(smr_fd, band, band_size, band_offset);
+	//returnCode = pwrite(smr_fd, band, band_size, band_offset);
 	if (returnCode < 0) {
 		printf("[ERROR] flushSSD():-------write to smr: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, band_offset);
 		exit(-1);
