@@ -12,8 +12,6 @@
 static SSDDesc *getStrategySSD();
 static void    *freeStrategySSD();
 static volatile void *flushSSD(SSDDesc * ssd_hdr);
-struct timeval	tv_begin_temp, tv_now_temp;
-struct timezone	tz_begin_temp, tz_now_temp;
 
 /*
  * init inner ssd buffer hash table, strategy_control, buffer, work_mem
@@ -68,6 +66,8 @@ smrread(int smr_fd, char *buffer, size_t size, off_t offset)
 	int		returnCode;
 	long		ssd_hash;
 	long		ssd_id;
+	struct timeval	tv_begin_temp, tv_now_temp;
+	struct timezone	tz_begin_temp, tz_now_temp;
 
 	for (i = 0; i * BLCKSZ < size; i++) {
 		ssd_tag.offset = offset + i * BLCKSZ;
@@ -114,6 +114,9 @@ smrwrite(int smr_fd, char *buffer, size_t size, off_t offset)
 	int		returnCode = 0;
 	long		ssd_hash;
 	long		ssd_id;
+	struct timeval	tv_begin_temp, tv_now_temp;
+	struct timezone	tz_begin_temp, tz_now_temp;
+
 
 	for (i = 0; i * BLCKSZ < size; i++) {
 		ssd_tag.offset = offset + i * BLCKSZ;
@@ -208,6 +211,9 @@ flushSSD(SSDDesc * ssd_hdr)
 	char           *band;
 	unsigned long	BandNum = GetSMRBandNumFromSSD(ssd_hdr->ssd_tag.offset);
 	off_t		Offset;
+
+	struct timeval	tv_begin_temp, tv_now_temp;
+	struct timezone	tz_begin_temp, tz_now_temp;
 
 	long		band_size = GetSMRActualBandSizeFromSSD(ssd_hdr->ssd_tag.offset);
 	off_t		band_offset = ssd_hdr->ssd_tag.offset - GetSMROffsetInBandFromSSD(ssd_hdr) * BLCKSZ;

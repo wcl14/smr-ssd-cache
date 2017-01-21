@@ -18,8 +18,6 @@ static SSDBufferDesc *SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool * found);
 static void    *initStrategySSDBuffer(SSDEvictionStrategy strategy);
 static SSDBufferDesc *getSSDStrategyBuffer(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy);
 static void    *hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy);
-struct timeval	tv_begin_temp, tv_now_temp;
-struct timezone	tz_begin_temp, tz_now_temp;
 
 /*
  * init buffer hash table, strategy_control, buffer, work_mem
@@ -58,6 +56,9 @@ flushSSDBuffer(SSDBufferDesc * ssd_buf_hdr)
 {
 	char           *ssd_buffer;
 	int		returnCode;
+	struct timeval	tv_begin_temp, tv_now_temp;
+	struct timezone	tz_begin_temp, tz_now_temp;
+
 	if (BandOrBlock == 1) {
 		SSD_BUFFER_SIZE = BNDSZ;
 		BLCKSZ = BNDSZ;
@@ -199,6 +200,9 @@ read_block(off_t offset, char *ssd_buffer)
 	static SSDBufferTag ssd_buf_tag;
 	static SSDBufferDesc *ssd_buf_hdr;
 
+	struct timeval	tv_begin_temp, tv_now_temp;
+	struct timezone	tz_begin_temp, tz_now_temp;
+
 	ssd_buf_tag.offset = offset;
 	if (DEBUG)
 		printf("[INFO] read():-------offset=%lu\n", offset);
@@ -270,6 +274,9 @@ write_block(off_t offset, char *ssd_buffer)
 
 	static SSDBufferTag ssd_buf_tag;
 	static SSDBufferDesc *ssd_buf_hdr;
+
+	struct timeval	tv_begin_temp, tv_now_temp;
+	struct timezone	tz_begin_temp, tz_now_temp;
 
 	ssd_buf_tag.offset = offset;
 	if (DEBUG)
