@@ -78,7 +78,7 @@ flushSSDBuffer(SSDBufferDesc * ssd_buf_hdr)
 	}
 	gettimeofday(&tv_now_temp, &tz_now_temp);
 	time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
-	time_read_ssd = time_now_temp - time_begin_temp;
+	time_read_ssd += time_now_temp - time_begin_temp;
 	returnCode = smrwrite(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_tag.offset);
 	//returnCode = pwrite(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_tag.offset);
 	if (returnCode < 0) {
@@ -232,7 +232,7 @@ read_block(off_t offset, char *ssd_buffer)
 			}
 			gettimeofday(&tv_now_temp, &tz_now_temp);
 			time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
-			time_read_ssd = time_now_temp - time_begin_temp;
+			time_read_ssd += time_now_temp - time_begin_temp;
 		} else {
 			returnCode = smrread(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, offset);
 			//returnCode = pread(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, offset);
@@ -255,7 +255,7 @@ read_block(off_t offset, char *ssd_buffer)
 			}
 			gettimeofday(&tv_now_temp, &tz_now_temp);
 			time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
-			time_write_ssd = time_now_temp - time_begin_temp;
+			time_write_ssd += time_now_temp - time_begin_temp;
 		}
 		ssd_buf_hdr->ssd_buf_flag &= ~SSD_BUF_VALID;
 		ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_VALID;
@@ -318,7 +318,7 @@ write_block(off_t offset, char *ssd_buffer)
 		}
 		gettimeofday(&tv_now_temp, &tz_now_temp);
 		time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
-		time_write_ssd = time_now_temp - time_begin_temp;
+		time_write_ssd += time_now_temp - time_begin_temp;
 		ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_VALID | SSD_BUF_DIRTY;
 	}
 }

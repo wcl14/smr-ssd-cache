@@ -86,7 +86,7 @@ smrread(int smr_fd, char *buffer, size_t size, off_t offset)
 			}
 			gettimeofday(&tv_now_temp, &tz_now_temp);
 			time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
-			time_read_fifo = time_now_temp - time_begin_temp;
+			time_read_fifo += time_now_temp - time_begin_temp;
 		} else {
 			read_smr_blocks++;
 			gettimeofday(&tv_begin_temp, &tz_begin_temp);
@@ -98,7 +98,7 @@ smrread(int smr_fd, char *buffer, size_t size, off_t offset)
 			}
 			gettimeofday(&tv_now_temp, &tz_now_temp);
 			time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
-			time_read_smr = time_now_temp - time_begin_temp;
+			time_read_smr += time_now_temp - time_begin_temp;
 		}
 	}
 
@@ -146,7 +146,7 @@ smrwrite(int smr_fd, char *buffer, size_t size, off_t offset)
 		}
 		gettimeofday(&tv_now_temp, &tz_now_temp);
 		time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
-		time_write_fifo = time_now_temp - time_begin_temp;
+		time_write_fifo += time_now_temp - time_begin_temp;
 	}
 
 }
@@ -233,7 +233,7 @@ flushSSD(SSDDesc * ssd_hdr)
 	}
 	gettimeofday(&tv_now_temp, &tz_now_temp);
 	time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
-	time_read_smr = time_now_temp - time_begin_temp;
+	time_read_smr += time_now_temp - time_begin_temp;
 	/* read cached pages from FIFO */
 	for (i = ssd_strategy_control->first_usedssd; i < ssd_strategy_control->first_usedssd + ssd_strategy_control->n_usedssd; i++) {
 		if (ssd_descriptors[i % NSSDs].ssd_flag & SSD_VALID && GetSMRBandNumFromSSD((&ssd_descriptors[i % NSSDs])->ssd_tag.offset) == BandNum) {
@@ -253,7 +253,7 @@ flushSSD(SSDDesc * ssd_hdr)
 			}
 			gettimeofday(&tv_now_temp, &tz_now_temp);
 			time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
-			time_read_fifo = time_now_temp - time_begin_temp;
+			time_read_fifo += time_now_temp - time_begin_temp;
 		}
 	}
 
@@ -274,7 +274,7 @@ flushSSD(SSDDesc * ssd_hdr)
 	}
 	gettimeofday(&tv_now_temp, &tz_now_temp);
 	time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
-	time_write_smr = time_now_temp - time_begin_temp;
+	time_write_smr += time_now_temp - time_begin_temp;
 	free(band);
 }
 
