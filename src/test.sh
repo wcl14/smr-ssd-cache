@@ -9,18 +9,19 @@ do
     for strategy in ${strategys[@]};
     do
         ssd_cache_num=$[${fifo_nums[$i]}*5]
+        period_long=${fifo_nums[$i]}
         if [ $strategy -ge 6 ]
         then
             j=0
             while [ $j -lt ${#zone_sizes[@]} ]
             do
-                echo ./smr-ssd-cache $ssd_cache_num ${fifo_nums[$i]} 0 4096 ${zone_sizes[$j]} $strategy $i
-                ./smr-ssd-cache $ssd_cache_num ${fifo_nums[$i]} 0 4096 ${zone_sizes[$j]} $strategy $i
+                echo ./smr-ssd-cache $ssd_cache_num ${fifo_nums[$i]} 0 4096 ${zone_sizes[$j]} $period_long $strategy $i
+                ./smr-ssd-cache $ssd_cache_num ${fifo_nums[$i]} 0 4096 ${zone_sizes[$j]} $period_long $strategy $i
                 let j++
             done
         else
-            echo ./smr-ssd-cache $ssd_cache_num ${fifo_nums[$i]} 0 4096 ${zone_sizes[0]} $strategy $i
-            ./smr-ssd-cache $ssd_cache_num ${fifo_nums[$i]} 0 4096 ${zone_sizes[0]} $strategy $i
+            echo ./smr-ssd-cache $ssd_cache_num ${fifo_nums[$i]} 0 4096 ${zone_sizes[0]} $period_long $strategy $i
+            ./smr-ssd-cache $ssd_cache_num ${fifo_nums[$i]} 0 4096 ${zone_sizes[0]} $period_long $strategy $i
         fi
     done
 done

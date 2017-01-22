@@ -107,7 +107,7 @@ initSSDBufferForMaxCold()
 
 	ssd_buffer_strategy_control_for_maxcold_history = (SSDBufferStrategyControlForMaxColdHistory *) malloc(sizeof(SSDBufferStrategyControlForMaxColdHistory));
 	ssd_buffer_strategy_control_for_maxcold_now = (SSDBufferStrategyControlForMaxColdNow *) malloc(sizeof(SSDBufferStrategyControlForMaxColdNow));
-	ssd_buffer_descriptors_for_maxcold_history = (SSDBufferDescForMaxColdHistory *) malloc(sizeof(SSDBufferDescForMaxColdHistory) * NSSDBuffers * (PERIODTIMES / NSSDLIMIT + 1));
+	ssd_buffer_descriptors_for_maxcold_history = (SSDBufferDescForMaxColdHistory *) malloc(sizeof(SSDBufferDescForMaxColdHistory) * NSSDBuffers * ((PERIODTIMES - 1) / NSSDBuffers + 2));
 	ssd_buffer_descriptors_for_maxcold_now = (SSDBufferDescForMaxColdNow *) malloc(sizeof(SSDBufferDescForMaxColdNow) * NSSDBuffers);
 	band_descriptors_for_maxcold_history = (BandDescForMaxColdHistory *) malloc(sizeof(BandDescForMaxColdHistory) * NSMRBands);
 	band_descriptors_for_maxcold_now = (BandDescForMaxColdNow *) malloc(sizeof(BandDescForMaxColdNow) * NSMRBands);
@@ -138,14 +138,14 @@ initSSDBufferForMaxCold()
     ssd_buffer_strategy_control_for_maxcold_history->first_lru = -1;
 	ssd_buffer_strategy_control_for_maxcold_history->last_lru = -1;
     ssd_buffer_strategy_control_for_maxcold_history->first_freessd = 0;
-	ssd_buffer_strategy_control_for_maxcold_history->last_freessd = NSSDBuffers * (PERIODTIMES / NSSDLIMIT + 1) - 1;
+	ssd_buffer_strategy_control_for_maxcold_history->last_freessd = NSSDBuffers * ((PERIODTIMES - 1) / NSSDBuffers + 2) - 1;
 	ssd_buffer_strategy_control_for_maxcold_history->n_usedssds = 0;
 
 	SSDBufferDescForMaxColdHistory *ssd_buf_hdr_for_maxcold_history;
 	BandDescForMaxColdHistory *band_hdr_for_maxcold_history;
 
 	ssd_buf_hdr_for_maxcold_history = ssd_buffer_descriptors_for_maxcold_history;
-	for (i = 0; i < NSSDBuffers * (PERIODTIMES / NSSDLIMIT + 1); ssd_buf_hdr_for_maxcold_history++, i++) {
+	for (i = 0; i < NSSDBuffers * ((PERIODTIMES - 1) / NSSDBuffers + 2); ssd_buf_hdr_for_maxcold_history++, i++) {
 		ssd_buf_hdr_for_maxcold_history->ssd_buf_tag.offset = 0;
 		ssd_buf_hdr_for_maxcold_history->ssd_buf_id = i;
 		ssd_buf_hdr_for_maxcold_history->next_lru = -1;
@@ -330,8 +330,8 @@ pause_and_caculate_next_period_maxcold()
 	i = 0;
     int domaxall = 0;
 	unsigned long	total_cold = 0;
-	while ((i < NSMRBands) && (total_cold < NSSDLIMIT || i < NCOLDBAND)) {
-        //printf("NSSDLIMIT=%ld, total_cold=%ld, band_num=%ld, current_cold_pages=%ld\n", NSSDLIMIT, total_cold, band_descriptors_for_maxcold_history[i].band_num, band_descriptors_for_maxcold_history[i].current_cold_pages);
+	while ((i < NSMRBands) && (total_cold < PERIODTIMES || i < NCOLDBAND)) {
+        //printf("PERIODTIMES=%ld, total_cold=%ld, band_num=%ld, current_cold_pages=%ld\n", PERIODTIMES, total_cold, band_descriptors_for_maxcold_history[i].band_num, band_descriptors_for_maxcold_history[i].current_cold_pages);
         if (band_descriptors_for_maxcold_history[i].current_cold_pages == 0) {
             domaxall = 1;
             break;
@@ -378,8 +378,8 @@ pause_and_caculate_next_period_maxall()
 
 	i = 0;
 	unsigned long	total = 0;
-	while ((i < NSMRBands) && (total < NSSDLIMIT || i < NCOLDBAND)) {
-        //printf("NSSDLIMIT=%ld, total=%ld, band_num=%ld, current_pages=%ld\n", NSSDLIMIT, total, band_descriptors_for_maxcold_history[i].band_num, band_descriptors_for_maxcold_history[i].current_pages);
+	while ((i < NSMRBands) && (total < PERIODTIMES || i < NCOLDBAND)) {
+        //printf("PERIODTIMES=%ld, total=%ld, band_num=%ld, current_pages=%ld\n", PERIODTIMES, total, band_descriptors_for_maxcold_history[i].band_num, band_descriptors_for_maxcold_history[i].current_pages);
 		total += band_descriptors_for_maxcold_history[i].current_pages;
 		band_descriptors_for_maxcold_now[band_descriptors_for_maxcold_history[i].band_num].ischosen = 1;
 		i++;
@@ -432,8 +432,8 @@ pause_and_caculate_next_period_avgbandhot()
 
 	i = 0;
 	unsigned long	total = 0;
-	while ((i < NSMRBands) && (total< NSSDLIMIT || i < NCOLDBAND)) {
-        //printf("NSSDLIMIT=%ld, total=%ld, band_num=%ld, current_pages=%ld, avgbandhot=%ld\n", NSSDLIMIT, total, band_descriptors_for_maxcold_history[i].band_num, band_descriptors_for_maxcold_history[i].current_pages, band_descriptors_for_maxcold_history[i].to_sort);
+	while ((i < NSMRBands) && (total< PERIODTIMES || i < NCOLDBAND)) {
+        //printf("PERIODTIMES=%ld, total=%ld, band_num=%ld, current_pages=%ld, avgbandhot=%ld\n", PERIODTIMES, total, band_descriptors_for_maxcold_history[i].band_num, band_descriptors_for_maxcold_history[i].current_pages, band_descriptors_for_maxcold_history[i].to_sort);
 		total += band_descriptors_for_maxcold_history[i].current_pages;
 		band_descriptors_for_maxcold_now[band_descriptors_for_maxcold_history[i].band_num].ischosen = 1;
 		i++;
@@ -486,8 +486,8 @@ pause_and_caculate_next_period_hotdivsize()
 
 	i = 0;
 	unsigned long	total = 0;
-	while ((i < NSMRBands) && (total< NSSDLIMIT || i < NCOLDBAND)) {
-        //printf("NSSDLIMIT=%ld, total=%ld, band_num=%ld, current_pages=%ld, hotdivsize=%ld\n", NSSDLIMIT, total, band_descriptors_for_maxcold_history[i].band_num, band_descriptors_for_maxcold_history[i].current_pages, band_descriptors_for_maxcold_history[i].to_sort);
+	while ((i < NSMRBands) && (total< PERIODTIMES || i < NCOLDBAND)) {
+        //printf("PERIODTIMES=%ld, total=%ld, band_num=%ld, current_pages=%ld, hotdivsize=%ld\n", PERIODTIMES, total, band_descriptors_for_maxcold_history[i].band_num, band_descriptors_for_maxcold_history[i].current_pages, band_descriptors_for_maxcold_history[i].to_sort);
 		total += band_descriptors_for_maxcold_history[i].current_pages;
 		band_descriptors_for_maxcold_now[band_descriptors_for_maxcold_history[i].band_num].ischosen = 1;
 		i++;
