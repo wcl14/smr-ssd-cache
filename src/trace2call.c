@@ -77,10 +77,10 @@ trace_to_iocall(char *trace_file_path)
 			} else if (action == '0') {
 				if (DEBUG)
 					printf("[INFO] trace_to_iocall():--------read offset=%lu\n", offset);
-				//if (BandOrBlock == 0)
-				//	read_block(offset, ssd_buffer);
-				//else
-				//	read_band(offset, ssd_buffer);
+				if (BandOrBlock == 0)
+					read_block(offset, ssd_buffer);
+				else
+					read_band(offset, ssd_buffer);
 			}
 			offset += BLCKSZ;
 			size -= BLCKSZ;
