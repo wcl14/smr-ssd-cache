@@ -95,10 +95,10 @@ getLRUBuffer()
 	SSDBufferTag	old_tag = ssd_buf_hdr->ssd_buf_tag;
 	if (DEBUG)
 		printf("[INFO] SSDBufferAlloc(): old_flag&SSD_BUF_DIRTY=%d\n", old_flag & SSD_BUF_DIRTY);
-	if (old_flag & SSD_BUF_DIRTY != 0) {
+	if ((old_flag & SSD_BUF_DIRTY) != 0) {
 		flushSSDBuffer(ssd_buf_hdr);
 	}
-	if (old_flag & SSD_BUF_VALID != 0) {
+	if ((old_flag & SSD_BUF_VALID) != 0) {
 		unsigned long	old_hash = ssdbuftableHashcode(&old_tag);
 		ssdbuftableDelete(&old_tag, old_hash);
 	}

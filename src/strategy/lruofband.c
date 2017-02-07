@@ -140,10 +140,10 @@ getSSDBufferofBand(SSDBufferTag ssd_buf_tag)
 
 		old_flag = ssd_buf_hdr->ssd_buf_flag;
 		old_tag = ssd_buf_hdr->ssd_buf_tag;
-		if (old_flag & SSD_BUF_DIRTY != 0) {
+		if ((old_flag & SSD_BUF_DIRTY) != 0) {
 			flushSSDBuffer(ssd_buf_hdr);
 		}
-		if (old_flag & SSD_BUF_VALID != 0) {
+		if ((old_flag & SSD_BUF_VALID) != 0) {
 			old_hash = ssdbuftableHashcode(&old_tag);
 			ssdbuftableDelete(&old_tag, old_hash);
 		}

@@ -568,11 +568,11 @@ getMaxColdBuffer(SSDBufferTag new_ssd_buf_tag, SSDEvictionStrategy strategy)
 	SSDBufferTag	old_tag = ssd_buf_hdr->ssd_buf_tag;
 	if (DEBUG)
 		printf("[INFO] SSDBufferAlloc(): old_flag&SSD_BUF_DIRTY=%d\n", old_flag & SSD_BUF_DIRTY);
-	if (old_flag & SSD_BUF_DIRTY != 0) {
+	if ((old_flag & SSD_BUF_DIRTY) != 0) {
         //printf("in flush: ssd_buf_id=%ld, offset=%ld, band_num=%ld, zone_num=%ld\n", ssd_buf_hdr->ssd_buf_id, ssd_buf_hdr->ssd_buf_tag.offset, GetSMRBandNumFromSSD(ssd_buf_hdr->ssd_buf_tag.offset), GetSMRZoneNumFromSSD(ssd_buf_hdr->ssd_buf_tag.offset));
 		flushSSDBuffer(ssd_buf_hdr);
 	}
-	if (old_flag & SSD_BUF_VALID != 0) {
+	if ((old_flag & SSD_BUF_VALID) != 0) {
 		unsigned long	old_hash = ssdbuftableHashcode(&old_tag);
 		ssdbuftableDelete(&old_tag, old_hash);
 	}
