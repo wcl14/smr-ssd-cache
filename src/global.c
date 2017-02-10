@@ -45,6 +45,8 @@ unsigned long read_fifo_blocks;
 unsigned long read_smr_blocks;
 unsigned long read_hit_num;
 unsigned long read_smr_bands;
+double time_read_cmr;
+double time_write_cmr;
 double time_read_ssd;
 double time_write_ssd;
 double time_read_fifo;

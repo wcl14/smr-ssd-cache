@@ -88,7 +88,7 @@ trace_to_iocall(char *trace_file_path)
 	}
 	gettimeofday(&tv_now, &tz_now);
 	time_now = tv_now.tv_sec + tv_now.tv_usec / 1000000.0;
-	printf("total run time (s) = %lf  time_read_ssd = %lf  time_write_ssd = %lf  time_read_fifo = %lf  time_write_fifo = %lf   time_read_smr = %lf   time_write_smr = %lf\n", time_now - time_begin, time_read_ssd, time_write_ssd, time_read_fifo, time_write_fifo, time_read_smr, time_write_smr);
+	printf("total run time (s) = %lf  time_read_cmr = %lf time_write_cmr = %lf time_read_ssd = %lf  time_write_ssd = %lf  time_read_fifo = %lf  time_write_fifo = %lf   time_read_smr = %lf   time_write_smr = %lf\n", time_now - time_begin, time_read_cmr, time_write_cmr, time_read_ssd, time_write_ssd, time_read_fifo, time_write_fifo, time_read_smr, time_write_smr);
 	printf("read_hit_num:%lu  hit num:%lu   read_ssd_blocks:%lu  flush_ssd_blocks:%lu flush_fifo_times:%lu read_fifo_blocks:%lu   flush_fifo_blocks:%lu  read_smr_blocks:%lu   read_smr_bands:%lu   flush_bands:%lu flush_band_size=%lu\n ", read_hit_num, hit_num, read_ssd_blocks, flush_ssd_blocks, flush_fifo_times, read_fifo_blocks, flush_fifo_blocks, read_smr_blocks, read_smr_bands, flush_bands, flush_band_size);
 	free(ssd_buffer);
 	fclose(trace);

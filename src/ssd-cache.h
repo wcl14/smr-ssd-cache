@@ -61,6 +61,8 @@ extern SSDBufferStrategyControl *ssd_buffer_strategy_control;
 extern unsigned long hit_num;
 extern unsigned long flush_ssd_blocks;
 extern unsigned long read_ssd_blocks;
+extern double time_read_cmr;
+extern double time_write_cmr;
 extern double time_read_ssd;
 extern double time_write_ssd;
 extern double time_begin_temp;

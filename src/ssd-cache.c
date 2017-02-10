@@ -46,6 +46,8 @@ initSSDBuffer()
 	hit_num = 0;
 	flush_ssd_blocks = 0;
 	read_ssd_blocks = 0;
+	time_read_cmr = 0.0;
+	time_write_cmr = 0.0;
 	time_read_ssd = 0.0;
 	time_write_ssd = 0.0;
 	read_hit_num;
@@ -208,11 +210,16 @@ read_block(off_t offset, char *ssd_buffer)
 		printf("[INFO] read():-------offset=%lu\n", offset);
 	if (EvictStrategy == CMR) {
 		read_smr_blocks++;
+        gettimeofday(&tv_begin_temp, &tz_begin_temp);
+        time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
 		returnCode = pread(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, offset);
 		if (returnCode < 0) {
 			printf("[ERROR] read_block():-------read from cmr: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
 			exit(-1);
 		}
+        gettimeofday(&tv_now_temp, &tz_now_temp);
+        time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
+        time_read_cmr += time_now_temp - time_begin_temp;
 	} else if (EvictStrategy == SMR) {
 		returnCode = smrread(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_tag.offset);
 		if (returnCode < 0) {
@@ -283,6 +290,8 @@ write_block(off_t offset, char *ssd_buffer)
 		printf("[INFO] write():-------offset=%lu\n", offset);
 	if (EvictStrategy == CMR) {
 		flush_bands++;
+		gettimeofday(&tv_begin_temp, &tz_begin_temp);
+		time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
 		returnCode = pwrite(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, offset);
 		if (returnCode < 0) {
 			printf("[ERROR] write_block():-------write to smr: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
@@ -293,6 +302,9 @@ write_block(off_t offset, char *ssd_buffer)
 			printf("[ERROR] write_block():----------fsync\n");
 			exit(-1);
 		}
+		gettimeofday(&tv_now_temp, &tz_now_temp);
+		time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
+		time_write_cmr += time_now_temp - time_begin_temp;
 	} else if (EvictStrategy == SMR) {
 		returnCode = smrwrite(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_tag.offset);
 		if (returnCode < 0) {
