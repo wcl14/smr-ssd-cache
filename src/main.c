@@ -58,6 +58,8 @@ main(int argc, char **argv)
 			EvictStrategy = AvgBandHot;
 		if (atoi(argv[7]) == 9)
 			EvictStrategy = HotDivSize;
+		if (atoi(argv[7]) == 10)
+			EvictStrategy = FourQuadrant;
 	} else {
 		printf("parameters are wrong %d\n", argc);
 		exit(-1);

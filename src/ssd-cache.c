@@ -13,6 +13,7 @@
 #include "strategy/scan.h"
 #include "strategy/WA.h"
 #include "strategy/maxcold.h"
+#include "strategy/fourquadrant.h"
 
 static SSDBufferDesc *SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool * found);
 static void    *initStrategySSDBuffer(SSDEvictionStrategy strategy);
@@ -137,6 +138,8 @@ initStrategySSDBuffer(SSDEvictionStrategy strategy)
 		initSSDBufferForMaxCold();
 	else if (strategy == HotDivSize)
 		initSSDBufferForMaxCold();
+	else if (strategy == FourQuadrant)
+		initSSDBufferForMaxColdEvict();
 }
 
 static SSDBufferDesc *
@@ -162,6 +165,8 @@ getSSDStrategyBuffer(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy)
 		return getMaxColdBuffer(ssd_buf_tag, strategy);
 	else if (strategy == HotDivSize)
 		return getMaxColdBuffer(ssd_buf_tag, strategy);
+    else if (strategy == FourQuadrant)
+		return getMaxColdEvictBuffer(ssd_buf_tag);
 }
 
 static void    *
@@ -187,6 +192,16 @@ hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy)
 		hitInMaxColdBuffer(ssd_buf_hdr);
 	else if (strategy == HotDivSize)
 		hitInMaxColdBuffer(ssd_buf_hdr);
+    else if (strategy == FourQuadrant)
+        hitInMaxColdEvictBuffer(ssd_buf_hdr);
+}
+
+static bool
+isCached(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy)
+{
+    if (strategy == FourQuadrant)
+        return isCachedMaxColdEvict(ssd_buf_tag);
+    return 1;
 }
 
 /*
@@ -220,7 +235,7 @@ read_block(off_t offset, char *ssd_buffer)
         gettimeofday(&tv_now_temp, &tz_now_temp);
         time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
         time_read_cmr += time_now_temp - time_begin_temp;
-	} else if (EvictStrategy == SMR) {
+	} else if (EvictStrategy == SMR || isCached(ssd_buf_tag, EvictStrategy) == 0) {
 		returnCode = smrread(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_tag.offset);
 		if (returnCode < 0) {
 			printf("[ERROR] read_block():---------SMR\n");
@@ -305,7 +320,7 @@ write_block(off_t offset, char *ssd_buffer)
 		gettimeofday(&tv_now_temp, &tz_now_temp);
 		time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
 		time_write_cmr += time_now_temp - time_begin_temp;
-	} else if (EvictStrategy == SMR) {
+	} else if (EvictStrategy == SMR || isCached(ssd_buf_tag, EvictStrategy) == 0) {
 		returnCode = smrwrite(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_tag.offset);
 		if (returnCode < 0) {
 			printf("[ERROR] write_block():---------SMR\n");
