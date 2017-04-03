@@ -15,10 +15,10 @@
 #include "strategy/maxcold.h"
 #include "strategy/fourquadrant.h"
 
-static SSDBufferDesc *SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool * found);
+static SSDBufferDesc *SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool * found, bool iswrite);
 static void    *initStrategySSDBuffer(SSDEvictionStrategy strategy);
-static SSDBufferDesc *getSSDStrategyBuffer(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy);
-static void    *hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy);
+static SSDBufferDesc *getSSDStrategyBuffer(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy, bool iswrite);
+static void    *hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy, bool iswrite);
 
 /*
  * init buffer hash table, strategy_control, buffer, work_mem
@@ -93,7 +93,7 @@ flushSSDBuffer(SSDBufferDesc * ssd_buf_hdr)
 }
 
 static SSDBufferDesc *
-SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool * found)
+SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool * found, bool iswrite)
 {
 	SSDBufferDesc  *ssd_buf_hdr;
 	unsigned long	ssd_buf_hash = ssdbuftableHashcode(&ssd_buf_tag);
@@ -103,10 +103,10 @@ SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool * found)
 		hit_num++;
 		ssd_buf_hdr = &ssd_buffer_descriptors[ssd_buf_id];
 		*found = 1;
-		hitInSSDBuffer(ssd_buf_hdr, EvictStrategy);
+		hitInSSDBuffer(ssd_buf_hdr, EvictStrategy, iswrite);
 		return ssd_buf_hdr;
 	}
-	ssd_buf_hdr = getSSDStrategyBuffer(ssd_buf_tag, EvictStrategy);
+	ssd_buf_hdr = getSSDStrategyBuffer(ssd_buf_tag, EvictStrategy, iswrite);
 
 	ssdbuftableInsert(&ssd_buf_tag, ssd_buf_hash, ssd_buf_hdr->ssd_buf_id);
 	ssd_buf_hdr->ssd_buf_flag &= ~(SSD_BUF_VALID | SSD_BUF_DIRTY);
@@ -138,12 +138,20 @@ initStrategySSDBuffer(SSDEvictionStrategy strategy)
 		initSSDBufferForMaxCold();
 	else if (strategy == HotDivSize)
 		initSSDBufferForMaxCold();
+	else if (strategy == MaxColdWriteOnly)
+		initSSDBufferForMaxColdWriteOnly();
+	else if (strategy == MaxAllWriteOnly)
+		initSSDBufferForMaxColdWriteOnly();
+	else if (strategy == AvgBandHotWriteOnly)
+		initSSDBufferForMaxColdWriteOnly();
+	else if (strategy == HotDivSizeWriteOnly)
+		initSSDBufferForMaxColdWriteOnly();
 	else if (strategy == FourQuadrant)
 		initSSDBufferForMaxColdEvict();
 }
 
 static SSDBufferDesc *
-getSSDStrategyBuffer(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy)
+getSSDStrategyBuffer(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy, bool iswrite)
 {
 	if (strategy == CLOCK)
 		return getCLOCKBuffer();
@@ -165,12 +173,20 @@ getSSDStrategyBuffer(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy)
 		return getMaxColdBuffer(ssd_buf_tag, strategy);
 	else if (strategy == HotDivSize)
 		return getMaxColdBuffer(ssd_buf_tag, strategy);
+	else if (strategy == MaxColdWriteOnly)
+		return getMaxColdBufferWriteOnly(ssd_buf_tag, strategy, iswrite);
+	else if (strategy == MaxAllWriteOnly)
+		return getMaxColdBufferWriteOnly(ssd_buf_tag, strategy, iswrite);
+	else if (strategy == AvgBandHotWriteOnly)
+		return getMaxColdBufferWriteOnly(ssd_buf_tag, strategy, iswrite);
+	else if (strategy == HotDivSizeWriteOnly)
+		return getMaxColdBufferWriteOnly(ssd_buf_tag, strategy, iswrite);
     else if (strategy == FourQuadrant)
 		return getMaxColdEvictBuffer(ssd_buf_tag);
 }
 
 static void    *
-hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy)
+hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy, bool iswrite)
 {
 	if (strategy == CLOCK)
 		hitInCLOCKBuffer(ssd_buf_hdr);
@@ -192,6 +208,14 @@ hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy)
 		hitInMaxColdBuffer(ssd_buf_hdr);
 	else if (strategy == HotDivSize)
 		hitInMaxColdBuffer(ssd_buf_hdr);
+	else if (strategy == MaxColdWriteOnly)
+		hitInMaxColdBufferWriteOnly(ssd_buf_hdr, iswrite);
+	else if (strategy == MaxAllWriteOnly)
+		hitInMaxColdBufferWriteOnly(ssd_buf_hdr, iswrite);
+	else if (strategy == AvgBandHotWriteOnly)
+		hitInMaxColdBufferWriteOnly(ssd_buf_hdr, iswrite);
+	else if (strategy == HotDivSizeWriteOnly)
+		hitInMaxColdBufferWriteOnly(ssd_buf_hdr, iswrite);
     else if (strategy == FourQuadrant)
         hitInMaxColdEvictBuffer(ssd_buf_hdr);
 }
@@ -201,6 +225,14 @@ isCached(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy)
 {
     if (strategy == FourQuadrant)
         return isCachedMaxColdEvict(ssd_buf_tag);
+    return 1;
+}
+
+static bool
+isOpenForEvicted(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy)
+{
+    if (strategy == MaxColdWriteOnly || strategy == MaxAllWriteOnly || strategy == AvgBandHotWriteOnly || strategy == HotDivSizeWriteOnly)
+        return isOpenForEvictedWriteOnly(ssd_buf_hdr);
     return 1;
 }
 
@@ -242,7 +274,7 @@ read_block(off_t offset, char *ssd_buffer)
 			exit(-1);
 		}
 	} else {
-		ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found);
+		ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found, 1);
 		if (found) {
 			read_hit_num++;
 			gettimeofday(&tv_begin_temp, &tz_begin_temp);
@@ -272,7 +304,7 @@ read_block(off_t offset, char *ssd_buffer)
 			}
 			//returnCode = fsync(ssd_fd);
 			if (returnCode < 0) {
-				printf("[ERROR] write_block():----------fsync\n");
+				printf("[ERROR] read_block():----------fsync\n");
 				exit(-1);
 			}
 			gettimeofday(&tv_now_temp, &tz_now_temp);
@@ -281,6 +313,7 @@ read_block(off_t offset, char *ssd_buffer)
 		}
 		ssd_buf_hdr->ssd_buf_flag &= ~SSD_BUF_DIRTY;
 		ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_VALID;
+		ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_ISCHOSEN;
 	}
 }
 
@@ -327,7 +360,7 @@ write_block(off_t offset, char *ssd_buffer)
 			exit(-1);
 		}
 	} else {
-		ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found);
+		ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found, 0);
 		flush_ssd_blocks++;
 		if (flush_ssd_blocks % 10000 == 0)
 			printf("hit num:%lu   flush_ssd_blocks:%lu flush_fifo_times:%lu flush_fifo_blocks:%lu  flusd_bands:%lu\n ", hit_num, flush_ssd_blocks, flush_fifo_times, flush_fifo_blocks, flush_bands);
@@ -347,6 +380,10 @@ write_block(off_t offset, char *ssd_buffer)
 		time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
 		time_write_ssd += time_now_temp - time_begin_temp;
 		ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_VALID | SSD_BUF_DIRTY;
+        if (isOpenForEvicted(ssd_buf_hdr, EvictStrategy) > 0)
+		    ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_ISCHOSEN;
+        else
+		    ssd_buf_hdr->ssd_buf_flag &= ~SSD_BUF_ISCHOSEN;
 	}
 }
 void
@@ -378,7 +415,7 @@ read_band(off_t offset, char *ssd_buffer)
 	printf("readband_tag%ld\n", band_tag.offset);
 	if (DEBUG)
 		printf("[INFO] read():-------offset=%lu\n", offset);
-	ssd_buf_hdr = SSDBufferAlloc(hdr_tag, &found);
+	ssd_buf_hdr = SSDBufferAlloc(hdr_tag, &found, 0);
 	if (found) {
 		returnCode = pread(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE + new_offset);
 		if (returnCode < 0) {
@@ -431,7 +468,7 @@ write_band(off_t offset, char *ssd_buffer)
 		printf("[ERROR] write_band():-------posix_memalign\n");
 		exit(-1);
 	}
-	ssd_buf_hdr = SSDBufferAlloc(hdr_tag, &found);
+	ssd_buf_hdr = SSDBufferAlloc(hdr_tag, &found, 1);
 	flush_ssd_blocks++;
 	if (flush_ssd_blocks % 10000 == 0)
 		printf("hit num:%lu   flush_ssd_blocks:%lu flush_fifo_times:%lu flush_fifo_blocks:%lu  flusd_bands:%lu\n ", hit_num, flush_ssd_blocks, flush_fifo_times, flush_fifo_blocks, flush_bands);

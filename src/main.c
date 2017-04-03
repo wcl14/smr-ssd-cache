@@ -51,13 +51,13 @@ main(int argc, char **argv)
 		if (atoi(argv[7]) == 5)
 			EvictStrategy = SMR;
 		if (atoi(argv[7]) == 6)
-			EvictStrategy = MaxCold;
+			EvictStrategy = MaxColdWriteOnly;
 		if (atoi(argv[7]) == 7)
-			EvictStrategy = MaxAll;
+			EvictStrategy = MaxAllWriteOnly;
 		if (atoi(argv[7]) == 8)
-			EvictStrategy = AvgBandHot;
+			EvictStrategy = AvgBandHotWriteOnly;
 		if (atoi(argv[7]) == 9)
-			EvictStrategy = HotDivSize;
+			EvictStrategy = HotDivSizeWriteOnly;
 		if (atoi(argv[7]) == 10)
 			EvictStrategy = FourQuadrant;
 	} else {

@@ -8,7 +8,7 @@ CFLAGS += -Wall -pthread
 CPPFLAGS += -I$(SMR_SSD_CACHE_DIR) -I$(SMR_SSD_CACHE_DIR)/smr-simulator -I$(SMR_SSD_CACHE_DIR)/strategy
 
 RM = rm -rf
-OBJS = global.o ssd_buf_table.o ssd-cache.o inner_ssd_buf_table.o smr-simulator.o trace2call.o main.o clock.o lru.o scan.o lruofband.o band_table.o most.o WA.o ssd_buf_table_for_coldmax_history.o maxcold.o fourquadrant.o
+OBJS = global.o ssd_buf_table.o ssd-cache.o inner_ssd_buf_table.o smr-simulator.o trace2call.o main.o clock.o lru.o scan.o lruofband.o band_table.o most.o WA.o ssd_buf_table_for_coldmax_history.o maxcold.o fourquadrant.o maxcold_writeonly.o
 
 all: $(OBJS) smr-ssd-cache
 	@echo 'Successfully built smr-ssd-cache...'
@@ -66,6 +66,9 @@ maxcold.o: strategy/maxcold.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $?
 
 fourquadrant.o: strategy/fourquadrant.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $?
+
+maxcold_writeonly.o: strategy/maxcold_writeonly.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $?
 
 clean:

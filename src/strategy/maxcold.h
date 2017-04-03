@@ -68,3 +68,7 @@ BandDescForMaxColdNow *band_descriptors_for_maxcold_now;
 extern void initSSDBufferForMaxCold();
 extern SSDBufferDesc *getMaxColdBuffer(SSDBufferTag, SSDEvictionStrategy);
 extern void *hitInMaxColdBuffer(SSDBufferDesc *);
+extern void initSSDBufferForMaxColdWriteOnly();
+extern SSDBufferDesc *getMaxColdBufferWriteOnly(SSDBufferTag, SSDEvictionStrategy, bool);
+extern void *hitInMaxColdBufferWriteOnly(SSDBufferDesc *, bool);
+extern bool isOpenForEvictedWriteOnly(SSDBufferDesc *);
