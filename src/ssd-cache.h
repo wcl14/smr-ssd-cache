@@ -52,9 +52,6 @@ typedef enum
     MaxAll,
     AvgBandHot,
     HotDivSize,
-    MaxColdWriteOnly,
-    MaxAllWriteOnly,
-    AvgBandHotWriteOnly,
     HotDivSizeWriteOnly,
     FourQuadrant
 } SSDEvictionStrategy;

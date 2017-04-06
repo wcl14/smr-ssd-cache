@@ -4,6 +4,7 @@
 typedef struct
 {
 	SSDBufferTag 	ssd_buf_tag;
+    unsigned    ssd_buf_flag;
 	long 		ssd_buf_id;				// ssd buffer location in shared buffer
     long        next_lru;               // to link used ssd as LRU
     long        last_lru;               // to link used ssd as LRU

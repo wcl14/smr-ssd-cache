@@ -138,12 +138,6 @@ initStrategySSDBuffer(SSDEvictionStrategy strategy)
 		initSSDBufferForMaxCold();
 	else if (strategy == HotDivSize)
 		initSSDBufferForMaxCold();
-	else if (strategy == MaxColdWriteOnly)
-		initSSDBufferForMaxColdWriteOnly();
-	else if (strategy == MaxAllWriteOnly)
-		initSSDBufferForMaxColdWriteOnly();
-	else if (strategy == AvgBandHotWriteOnly)
-		initSSDBufferForMaxColdWriteOnly();
 	else if (strategy == HotDivSizeWriteOnly)
 		initSSDBufferForMaxColdWriteOnly();
 	else if (strategy == FourQuadrant)
@@ -173,12 +167,6 @@ getSSDStrategyBuffer(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy, boo
 		return getMaxColdBuffer(ssd_buf_tag, strategy);
 	else if (strategy == HotDivSize)
 		return getMaxColdBuffer(ssd_buf_tag, strategy);
-	else if (strategy == MaxColdWriteOnly)
-		return getMaxColdBufferWriteOnly(ssd_buf_tag, strategy, iswrite);
-	else if (strategy == MaxAllWriteOnly)
-		return getMaxColdBufferWriteOnly(ssd_buf_tag, strategy, iswrite);
-	else if (strategy == AvgBandHotWriteOnly)
-		return getMaxColdBufferWriteOnly(ssd_buf_tag, strategy, iswrite);
 	else if (strategy == HotDivSizeWriteOnly)
 		return getMaxColdBufferWriteOnly(ssd_buf_tag, strategy, iswrite);
     else if (strategy == FourQuadrant)
@@ -208,12 +196,6 @@ hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy, bool i
 		hitInMaxColdBuffer(ssd_buf_hdr);
 	else if (strategy == HotDivSize)
 		hitInMaxColdBuffer(ssd_buf_hdr);
-	else if (strategy == MaxColdWriteOnly)
-		hitInMaxColdBufferWriteOnly(ssd_buf_hdr, iswrite);
-	else if (strategy == MaxAllWriteOnly)
-		hitInMaxColdBufferWriteOnly(ssd_buf_hdr, iswrite);
-	else if (strategy == AvgBandHotWriteOnly)
-		hitInMaxColdBufferWriteOnly(ssd_buf_hdr, iswrite);
 	else if (strategy == HotDivSizeWriteOnly)
 		hitInMaxColdBufferWriteOnly(ssd_buf_hdr, iswrite);
     else if (strategy == FourQuadrant)
@@ -231,7 +213,7 @@ isCached(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy)
 static bool
 isOpenForEvicted(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy)
 {
-    if (strategy == MaxColdWriteOnly || strategy == MaxAllWriteOnly || strategy == AvgBandHotWriteOnly || strategy == HotDivSizeWriteOnly)
+    if (strategy == HotDivSizeWriteOnly)
         return isOpenForEvictedWriteOnly(ssd_buf_hdr);
     return 1;
 }
@@ -244,7 +226,7 @@ read_block(off_t offset, char *ssd_buffer)
 {
 	void           *ssd_buf_block;
 	bool		found = 0;
-	int		returnCode;
+	int		returnCode = 0;
 
 	static SSDBufferTag ssd_buf_tag;
 	static SSDBufferDesc *ssd_buf_hdr;
@@ -311,7 +293,6 @@ read_block(off_t offset, char *ssd_buffer)
 			time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
 			time_write_ssd += time_now_temp - time_begin_temp;
 		}
-		ssd_buf_hdr->ssd_buf_flag &= ~SSD_BUF_DIRTY;
 		ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_VALID;
 		ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_ISCHOSEN;
 	}
