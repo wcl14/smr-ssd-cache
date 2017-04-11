@@ -21,6 +21,13 @@ typedef struct
 
 typedef struct
 {
+	long 		ssd_buf_id;				// ssd buffer location in shared buffer
+    long        next_lru;               // to link used ssd as LRU
+    long        last_lru;               // to link used ssd as LRU
+} SSDBufferDescForLRURead;
+
+typedef struct
+{
     long        first_lru;          // Head of list of LRU
     long        last_lru;           // Tail of list of LRU
     long        first_freessd;     // Head of list of free ssds
@@ -34,6 +41,15 @@ typedef struct
     long        last_lru;           // Tail of list of LRU
     long        n_usedssds;
 } SSDBufferStrategyControlForMaxColdNow;
+
+typedef struct
+{
+    long        first_lru;          // Head of list of LRU
+    long        last_lru;           // Tail of list of LRU
+    long        first_freessd;     // Head of list of free ssds
+    long        last_freessd;      // Tail of list of free ssds
+    long        n_usedssds;
+} SSDBufferStrategyControlForLRURead;
 
 typedef struct
 {
@@ -61,15 +77,14 @@ SSDBufferHashBucket	*ssd_buffer_hashtable_history;
 
 SSDBufferDescForMaxColdHistory *ssd_buffer_descriptors_for_maxcold_history;
 SSDBufferDescForMaxColdNow *ssd_buffer_descriptors_for_maxcold_now;
+SSDBufferDescForLRURead *ssd_buffer_descriptors_for_lru_read;
 SSDBufferStrategyControlForMaxColdHistory *ssd_buffer_strategy_control_for_maxcold_history;
 SSDBufferStrategyControlForMaxColdNow *ssd_buffer_strategy_control_for_maxcold_now;
+SSDBufferStrategyControlForLRURead *ssd_buffer_strategy_control_for_lru_read;
 BandDescForMaxColdHistory *band_descriptors_for_maxcold_history;
 BandDescForMaxColdNow *band_descriptors_for_maxcold_now;
 
-extern void initSSDBufferForMaxCold();
-extern SSDBufferDesc *getMaxColdBuffer(SSDBufferTag, SSDEvictionStrategy);
-extern void *hitInMaxColdBuffer(SSDBufferDesc *);
-extern void initSSDBufferForMaxColdWriteOnly();
-extern SSDBufferDesc *getMaxColdBufferWriteOnly(SSDBufferTag, SSDEvictionStrategy, bool);
-extern void *hitInMaxColdBufferWriteOnly(SSDBufferDesc *, bool);
-extern bool isOpenForEvictedWriteOnly(SSDBufferDesc *);
+extern void initSSDBufferForMaxColdSplitRW();
+extern SSDBufferDesc *getMaxColdBufferSplitRW(SSDBufferTag, bool);
+extern void *hitInMaxColdBufferSplitRW(SSDBufferDesc *, bool);
+extern bool isOpenForEvictedSplitRW(SSDBufferDesc *);

@@ -9,6 +9,8 @@ extern int 		    ssd_fd;
 extern int 		    inner_ssd_fd;
 extern int BandOrBlock;
 extern unsigned long NSSDBuffers;
+extern unsigned long NSSDBuffersRead;
+extern unsigned long NSSDBuffersWrite;
 extern unsigned long NSSDBufTables;
 extern unsigned long SSD_BUFFER_SIZE;
 extern size_t ZONESZ;

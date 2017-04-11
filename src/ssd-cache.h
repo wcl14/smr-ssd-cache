@@ -52,7 +52,7 @@ typedef enum
     MaxAll,
     AvgBandHot,
     HotDivSize,
-    HotDivSizeWriteOnly,
+    HotDivSizeSplitRW,
     FourQuadrant
 } SSDEvictionStrategy;
 
@@ -87,6 +87,8 @@ extern void write_band(off_t offset, char* ssd_buffer);
 extern void* flushSSDBuffer(SSDBufferDesc *ssd_buf_hdr);
 
 extern unsigned long NSSDBuffers;
+extern unsigned long NSSDBuffersRead;
+extern unsigned long NSSDBuffersWrite;
 extern unsigned long NSSDBufTables;
 extern size_t SSD_BUFFER_SIZE;
 extern char	smr_device[100];

@@ -32,18 +32,27 @@ initSSDBuffer()
 	ssd_buffer_strategy_control = (SSDBufferStrategyControl *) malloc(sizeof(SSDBufferStrategyControl));
 	ssd_buffer_strategy_control->n_usedssd = 0;
 	ssd_buffer_strategy_control->first_freessd = 0;
-	ssd_buffer_strategy_control->last_freessd = NSSDBuffers - 1;
+	ssd_buffer_strategy_control->last_freessd = NSSDBuffersWrite - 1;
 
-	ssd_buffer_descriptors = (SSDBufferDesc *) malloc(sizeof(SSDBufferDesc) * NSSDBuffers);
+	ssd_buffer_descriptors = (SSDBufferDesc *) malloc(sizeof(SSDBufferDesc) * (NSSDBuffersRead + NSSDBuffersWrite));
 	SSDBufferDesc  *ssd_buf_hdr;
 	long		i;
 	ssd_buf_hdr = ssd_buffer_descriptors;
-	for (i = 0; i < NSSDBuffers; ssd_buf_hdr++, i++) {
+	for (i = 0; i < NSSDBuffersWrite; ssd_buf_hdr++, i++) {
 		ssd_buf_hdr->ssd_buf_flag = 0;
 		ssd_buf_hdr->ssd_buf_id = i;
 		ssd_buf_hdr->next_freessd = i + 1;
 	}
-	ssd_buffer_descriptors[NSSDBuffers - 1].next_freessd = -1;
+	ssd_buffer_descriptors[NSSDBuffersWrite - 1].next_freessd = -1;
+
+	ssd_buf_hdr = &ssd_buffer_descriptors[NSSDBuffersWrite];
+	for (i = NSSDBuffersWrite; i < NSSDBuffersRead + NSSDBuffersWrite; ssd_buf_hdr++, i++) {
+		ssd_buf_hdr->ssd_buf_flag = 0;
+		ssd_buf_hdr->ssd_buf_id = i;
+		ssd_buf_hdr->next_freessd = i + 1;
+	}
+	ssd_buffer_descriptors[NSSDBuffersRead + NSSDBuffersWrite - 1].next_freessd = -1;
+
 	hit_num = 0;
 	flush_ssd_blocks = 0;
 	read_ssd_blocks = 0;
@@ -51,7 +60,7 @@ initSSDBuffer()
 	time_write_cmr = 0.0;
 	time_read_ssd = 0.0;
 	time_write_ssd = 0.0;
-	read_hit_num;
+	read_hit_num = 0;
 }
 
 void           *
@@ -138,8 +147,8 @@ initStrategySSDBuffer(SSDEvictionStrategy strategy)
 		initSSDBufferForMaxCold();
 	else if (strategy == HotDivSize)
 		initSSDBufferForMaxCold();
-	else if (strategy == HotDivSizeWriteOnly)
-		initSSDBufferForMaxColdWriteOnly();
+	else if (strategy == HotDivSizeSplitRW)
+		initSSDBufferForMaxColdSplitRW();
 	else if (strategy == FourQuadrant)
 		initSSDBufferForMaxColdEvict();
 }
@@ -167,8 +176,8 @@ getSSDStrategyBuffer(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy, boo
 		return getMaxColdBuffer(ssd_buf_tag, strategy);
 	else if (strategy == HotDivSize)
 		return getMaxColdBuffer(ssd_buf_tag, strategy);
-	else if (strategy == HotDivSizeWriteOnly)
-		return getMaxColdBufferWriteOnly(ssd_buf_tag, strategy, iswrite);
+	else if (strategy == HotDivSizeSplitRW)
+		return getMaxColdBufferSplitRW(ssd_buf_tag, iswrite);
     else if (strategy == FourQuadrant)
 		return getMaxColdEvictBuffer(ssd_buf_tag);
 }
@@ -196,8 +205,8 @@ hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy, bool i
 		hitInMaxColdBuffer(ssd_buf_hdr);
 	else if (strategy == HotDivSize)
 		hitInMaxColdBuffer(ssd_buf_hdr);
-	else if (strategy == HotDivSizeWriteOnly)
-		hitInMaxColdBufferWriteOnly(ssd_buf_hdr, iswrite);
+	else if (strategy == HotDivSizeSplitRW)
+		hitInMaxColdBufferSplitRW(ssd_buf_hdr, iswrite);
     else if (strategy == FourQuadrant)
         hitInMaxColdEvictBuffer(ssd_buf_hdr);
 }
@@ -213,8 +222,8 @@ isCached(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy)
 static bool
 isOpenForEvicted(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy)
 {
-    if (strategy == HotDivSizeWriteOnly)
-        return isOpenForEvictedWriteOnly(ssd_buf_hdr);
+    if (strategy == HotDivSizeSplitRW)
+        return isOpenForEvictedSplitRW(ssd_buf_hdr);
     return 1;
 }
 
@@ -256,7 +265,7 @@ read_block(off_t offset, char *ssd_buffer)
 			exit(-1);
 		}
 	} else {
-		ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found, 1);
+		ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found, 0);
 		if (found) {
 			read_hit_num++;
 			gettimeofday(&tv_begin_temp, &tz_begin_temp);
@@ -341,7 +350,7 @@ write_block(off_t offset, char *ssd_buffer)
 			exit(-1);
 		}
 	} else {
-		ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found, 0);
+		ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found, 1);
 		flush_ssd_blocks++;
 		if (flush_ssd_blocks % 10000 == 0)
 			printf("hit num:%lu   flush_ssd_blocks:%lu flush_fifo_times:%lu flush_fifo_blocks:%lu  flusd_bands:%lu\n ", hit_num, flush_ssd_blocks, flush_fifo_times, flush_fifo_blocks, flush_bands);

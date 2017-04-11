@@ -3,6 +3,8 @@
 #include "main.h"
 
 unsigned long NSSDBuffers;
+unsigned long NSSDBuffersRead;
+unsigned long NSSDBuffersWrite;
 unsigned long NSSDBufTables;
 unsigned long SSD_BUFFER_SIZE;
 unsigned long NSMRBands = 19418000;		// 194180*(18MB+36MB)/2~5TB
