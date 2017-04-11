@@ -114,7 +114,7 @@ initSSDBufferForMaxColdSplitRW()
 	ssd_buffer_strategy_control_for_maxcold_history = (SSDBufferStrategyControlForMaxColdHistory *) malloc(sizeof(SSDBufferStrategyControlForMaxColdHistory));
 	ssd_buffer_strategy_control_for_maxcold_now = (SSDBufferStrategyControlForMaxColdNow *) malloc(sizeof(SSDBufferStrategyControlForMaxColdNow));
 	ssd_buffer_strategy_control_for_lru_read = (SSDBufferStrategyControlForLRURead *) malloc(sizeof(SSDBufferStrategyControlForLRURead));
-	ssd_buffer_descriptors_for_maxcold_history = (SSDBufferDescForMaxColdHistory *) malloc(sizeof(SSDBufferDescForMaxColdHistory) * NSSDBuffers * ((PERIODTIMES - 1) / NSSDBuffers + 2));
+	ssd_buffer_descriptors_for_maxcold_history = (SSDBufferDescForMaxColdHistory *) malloc(sizeof(SSDBufferDescForMaxColdHistory) * (NSSDBuffersRead + NSSDBuffersWrite) * ((PERIODTIMES - 1) / NSSDBuffers + 2));
 	ssd_buffer_descriptors_for_maxcold_now = (SSDBufferDescForMaxColdNow *) malloc(sizeof(SSDBufferDescForMaxColdNow) * NSSDBuffers);
 	ssd_buffer_descriptors_for_lru_read = (SSDBufferDescForLRURead *) malloc(sizeof(SSDBufferDescForLRURead) * (NSSDBuffersRead + NSSDBuffersWrite));
 	band_descriptors_for_maxcold_history = (BandDescForMaxColdHistory *) malloc(sizeof(BandDescForMaxColdHistory) * NSMRBands);
@@ -146,14 +146,14 @@ initSSDBufferForMaxColdSplitRW()
     ssd_buffer_strategy_control_for_maxcold_history->first_lru = -1;
 	ssd_buffer_strategy_control_for_maxcold_history->last_lru = -1;
     ssd_buffer_strategy_control_for_maxcold_history->first_freessd = 0;
-	ssd_buffer_strategy_control_for_maxcold_history->last_freessd = NSSDBuffers * ((PERIODTIMES - 1) / NSSDBuffers + 2)- 1;
+	ssd_buffer_strategy_control_for_maxcold_history->last_freessd = (NSSDBuffersRead + NSSDBuffersWrite) * ((PERIODTIMES - 1) / NSSDBuffers + 2)- 1;
 	ssd_buffer_strategy_control_for_maxcold_history->n_usedssds = 0;
 
 	SSDBufferDescForMaxColdHistory *ssd_buf_hdr_for_maxcold_history;
 	BandDescForMaxColdHistory *band_hdr_for_maxcold_history;
 
 	ssd_buf_hdr_for_maxcold_history = ssd_buffer_descriptors_for_maxcold_history;
-	for (i = 0; i < NSSDBuffers * ((PERIODTIMES - 1) / NSSDBuffers + 2); ssd_buf_hdr_for_maxcold_history++, i++) {
+	for (i = 0; i < (NSSDBuffersRead + NSSDBuffersWrite) * ((PERIODTIMES - 1) / NSSDBuffers + 2); ssd_buf_hdr_for_maxcold_history++, i++) {
 		ssd_buf_hdr_for_maxcold_history->ssd_buf_tag.offset = 0;
         ssd_buf_hdr_for_maxcold_history->ssd_buf_flag = 0;
 		ssd_buf_hdr_for_maxcold_history->ssd_buf_id = i;
@@ -195,6 +195,7 @@ initSSDBufferForMaxColdSplitRW()
 static volatile void *
 addToLRUHeadHistory(SSDBufferDescForMaxColdHistory * ssd_buf_hdr_for_maxcold_history)
 {
+//    printf("in addToLRUHeadHistory(): ssd_buffer_strategy_control_for_maxcold_history->n_usedssds=%ld\n", ssd_buffer_strategy_control_for_maxcold_history->n_usedssds);
 	if (ssd_buffer_strategy_control_for_maxcold_history->n_usedssds == 0) {
 		ssd_buffer_strategy_control_for_maxcold_history->first_lru = ssd_buf_hdr_for_maxcold_history->ssd_buf_id;
 		ssd_buffer_strategy_control_for_maxcold_history->last_lru = ssd_buf_hdr_for_maxcold_history->ssd_buf_id;
@@ -212,6 +213,7 @@ addToLRUHeadHistory(SSDBufferDescForMaxColdHistory * ssd_buf_hdr_for_maxcold_his
 static volatile void *
 deleteFromLRUHistory(SSDBufferDescForMaxColdHistory * ssd_buf_hdr_for_maxcold_history)
 {
+//    printf("in deleteFromLRUHistory(): ssd_buffer_strategy_control_for_maxcold_history->n_usedssds=%ld\n", ssd_buffer_strategy_control_for_maxcold_history->n_usedssds);
 	if (ssd_buf_hdr_for_maxcold_history->last_lru >= 0) {
 		ssd_buffer_descriptors_for_maxcold_history[ssd_buf_hdr_for_maxcold_history->last_lru].next_lru = ssd_buf_hdr_for_maxcold_history->next_lru;
 	} else {
@@ -239,6 +241,7 @@ moveToLRUHeadHistory(SSDBufferDescForMaxColdHistory * ssd_buf_hdr_for_maxcold_hi
 static volatile void *
 addToLRUHeadNow(SSDBufferDescForMaxColdNow * ssd_buf_hdr_for_maxcold_now)
 {
+//    printf("in addToLRUHeadNow(): ssd_buffer_strategy_control_for_maxcold_now->n_usedssds=%ld\n", ssd_buffer_strategy_control_for_maxcold_now->n_usedssds);
 
 	if (ssd_buffer_strategy_control_for_maxcold_now->n_usedssds == 0) {
 		ssd_buffer_strategy_control_for_maxcold_now->first_lru = ssd_buf_hdr_for_maxcold_now->ssd_buf_id;
@@ -257,6 +260,7 @@ addToLRUHeadNow(SSDBufferDescForMaxColdNow * ssd_buf_hdr_for_maxcold_now)
 static volatile void *
 deleteFromLRUNow(SSDBufferDescForMaxColdNow * ssd_buf_hdr_for_maxcold_now)
 {
+//    printf("in deleteFromLRUNow(): ssd_buffer_strategy_control_for_maxcold_now->n_usedssds=%ld\n", ssd_buffer_strategy_control_for_maxcold_now->n_usedssds);
     long i;
 
 	if (ssd_buf_hdr_for_maxcold_now->last_lru >= 0) {
@@ -342,6 +346,10 @@ pause_and_caculate_next_period_hotdivsize()
 	}
 
 	ssd_buf_hdr = ssd_buffer_descriptors;
+    printf("ssd_buffer_strategy_control->n_usedssd=%ld\n", ssd_buffer_strategy_control->n_usedssd);
+    printf("ssd_buffer_strategy_control_for_maxcold_history->n_usedssds=%ld\n", ssd_buffer_strategy_control_for_maxcold_history->n_usedssds);
+    printf("ssd_buffer_strategy_control_for_maxcold_now->n_usedssds=%ld\n", ssd_buffer_strategy_control_for_maxcold_now->n_usedssds);
+    printf("ssd_buffer_strategy_control_for_lru_read->n_usedssds=%ld\n", ssd_buffer_strategy_control_for_lru_read->n_usedssds);
 	for (i = 0; i < ssd_buffer_strategy_control->n_usedssd; i++, ssd_buf_hdr++) {
 		if ((ssd_buf_hdr->ssd_buf_flag & SSD_BUF_DIRTY) != 0) {
 	        band_num = GetSMRZoneNumFromSSD(ssd_buf_hdr->ssd_buf_tag.offset);
@@ -400,6 +408,7 @@ pause_and_caculate_next_period_hotdivsize()
 static volatile void *
 addToLRUHead(SSDBufferDescForLRURead * ssd_buf_hdr_for_lru_read)
 {
+//    printf("in addToLRUHead(): ssd_buffer_strategy_control_for_lru_read->n_usedssds=%ld\n", ssd_buffer_strategy_control_for_lru_read->n_usedssds);
 	if (ssd_buffer_strategy_control_for_lru_read->n_usedssds == 0) {
 		ssd_buffer_strategy_control_for_lru_read->first_lru = ssd_buf_hdr_for_lru_read->ssd_buf_id;
 		ssd_buffer_strategy_control_for_lru_read->last_lru = ssd_buf_hdr_for_lru_read->ssd_buf_id;
@@ -416,6 +425,7 @@ addToLRUHead(SSDBufferDescForLRURead * ssd_buf_hdr_for_lru_read)
 static volatile void *
 deleteFromLRU(SSDBufferDescForLRURead * ssd_buf_hdr_for_lru_read)
 {
+//    printf("in deleteFromLRU(): ssd_buffer_strategy_control_for_lru_read->n_usedssds=%ld\n", ssd_buffer_strategy_control_for_lru_read->n_usedssds);
 	if (ssd_buf_hdr_for_lru_read->last_lru >= 0) {
 		ssd_buffer_descriptors_for_lru_read[ssd_buf_hdr_for_lru_read->last_lru].next_lru = ssd_buf_hdr_for_lru_read->next_lru;
 	} else {
@@ -451,6 +461,7 @@ getMaxColdBufferSplitRW(SSDBufferTag new_ssd_buf_tag, bool iswrite)
 static SSDBufferDesc  *
 getMaxColdBufferWrite(SSDBufferTag new_ssd_buf_tag)
 {
+//    printf("in getMaxColdBufferWrite(), first_freessd=%ld, run_tims=%ld\n", ssd_buffer_strategy_control->first_freessd, run_times);
 	if (ssd_buffer_strategy_control->first_freessd < 0 && run_times >= PERIODTIMES)
         pause_and_caculate_next_period_hotdivsize();
 	
@@ -471,7 +482,8 @@ getMaxColdBufferWrite(SSDBufferTag new_ssd_buf_tag)
             ssd_buf_hdr_for_maxcold_history = &ssd_buffer_descriptors_for_maxcold_history[ssd_buffer_strategy_control_for_maxcold_history->first_freessd];
             ssd_buffer_strategy_control_for_maxcold_history->first_freessd = ssd_buf_hdr_for_maxcold_history->next_freessd;
             ssd_buf_hdr_for_maxcold_history->next_freessd = -1;
-        }
+        } else
+            printf("can not get here2\n");
         ssd_buf_hdr_for_maxcold_history->ssd_buf_tag = new_ssd_buf_tag;
         ssd_buf_hdr_for_maxcold_history->ssd_buf_flag |= SSD_BUF_DIRTY;
 		ssdbuftableInsertHistory(&ssd_buf_tag_history, ssd_buf_hash_history, ssd_buf_hdr_for_maxcold_history->ssd_buf_id);
@@ -490,8 +502,11 @@ getMaxColdBufferWrite(SSDBufferTag new_ssd_buf_tag)
 		unsigned long	band_num = GetSMRZoneNumFromSSD(ssd_buf_hdr->ssd_buf_tag.offset);
         if (band_descriptors_for_maxcold_now[band_num].ischosen > 0) { 
 			addToLRUHeadNow(ssd_buf_hdr_for_maxcold_now);
-		}
+		} else
+            printf("*********band_num=%ld", band_num);
 		ssd_buffer_strategy_control->n_usedssd++;
+//        if (ssd_buffer_strategy_control->n_usedssd != ssd_buffer_strategy_control_for_maxcold_now->n_usedssds)
+//            printf("================n_usedssd=%ld, now_n_usedssds=%ld\n", ssd_buffer_strategy_control->n_usedssd, ssd_buffer_strategy_control_for_maxcold_now->n_usedssds);
 		return ssd_buf_hdr;
 	}
 	flush_fifo_times++;
@@ -502,15 +517,17 @@ getMaxColdBufferWrite(SSDBufferTag new_ssd_buf_tag)
 	unsigned long	band_num = GetSMRZoneNumFromSSD(ssd_buf_hdr->ssd_buf_tag.offset);
     if ((ssd_buf_hdr->ssd_buf_flag & SSD_BUF_ISCHOSEN) > 0) {
 		deleteFromLRUNow(ssd_buf_hdr_for_maxcold_now);
-	}
+	} 
 	band_num = GetSMRZoneNumFromSSD(new_ssd_buf_tag.offset);
     if (band_descriptors_for_maxcold_now[band_num].ischosen > 0) { 
 		addToLRUHeadNow(ssd_buf_hdr_for_maxcold_now);
 	}
+//        if (ssd_buffer_strategy_control->n_usedssd != ssd_buffer_strategy_control_for_maxcold_now->n_usedssds)
+//            printf("0-1================n_usedssd=%ld, now_n_usedssds=%ld\n", ssd_buffer_strategy_control->n_usedssd, ssd_buffer_strategy_control_for_maxcold_now->n_usedssds);
 	unsigned char	old_flag = ssd_buf_hdr->ssd_buf_flag;
 	SSDBufferTag	old_tag = ssd_buf_hdr->ssd_buf_tag;
 	if (DEBUG)
-		printf("[INFO] SSDBufferAlloc(): old_flag&SSD_BUF_DIRTY=%d\n", old_flag & SSD_BUF_DIRTY);
+		printf("[INFO] getMaxColdBufferWrite(): old_flag&SSD_BUF_DIRTY=%d\n", old_flag & SSD_BUF_DIRTY);
 	if ((old_flag & SSD_BUF_DIRTY) != 0) {
 		flushSSDBuffer(ssd_buf_hdr);
 	}
@@ -543,7 +560,7 @@ getMaxColdBufferRead(SSDBufferTag new_ssd_buf_tag)
 	unsigned char	old_flag = ssd_buf_hdr->ssd_buf_flag;
 	SSDBufferTag	old_tag = ssd_buf_hdr->ssd_buf_tag;
 	if (DEBUG)
-		printf("[INFO] SSDBufferAlloc(): old_flag&SSD_BUF_DIRTY=%d\n", old_flag & SSD_BUF_DIRTY);
+		printf("[INFO] getMaxColdBufferRead(): old_flag&SSD_BUF_DIRTY=%d\n", old_flag & SSD_BUF_DIRTY);
 	if ((old_flag & SSD_BUF_VALID) != 0) {
 		unsigned long	old_hash = ssdbuftableHashcode(&old_tag);
 		ssdbuftableDelete(&old_tag, old_hash);
@@ -568,6 +585,8 @@ hitInMaxColdBufferWrite(SSDBufferDesc * ssd_buf_hdr)
 	SSDBufferTag	ssd_buf_tag_history = ssd_buf_hdr->ssd_buf_tag;
 	unsigned long	ssd_buf_hash_history = ssdbuftableHashcodeHistory(&ssd_buf_tag_history);
 	long		ssd_buf_id_history = ssdbuftableLookupHistory(&ssd_buf_tag_history, ssd_buf_hash_history);
+//        if (ssd_buffer_strategy_control->n_usedssd != ssd_buffer_strategy_control_for_maxcold_now->n_usedssds)
+//            printf("1================n_usedssd=%ld, now_n_usedssds=%ld\n", ssd_buffer_strategy_control->n_usedssd, ssd_buffer_strategy_control_for_maxcold_now->n_usedssds);
     if ((ssd_buf_hdr->ssd_buf_flag & SSD_BUF_DIRTY) > 0) {
 	    ssd_buf_hdr_for_maxcold_history = &ssd_buffer_descriptors_for_maxcold_history[ssd_buf_id_history];
 	    ssd_buf_hdr_for_maxcold_history->hit_times++;
@@ -578,10 +597,12 @@ hitInMaxColdBufferWrite(SSDBufferDesc * ssd_buf_hdr)
 	    if ((ssd_buf_hdr->ssd_buf_flag & SSD_BUF_ISCHOSEN) > 0) {
 	        SSDBufferDescForMaxColdNow *ssd_buf_hdr_for_maxcold_now = &ssd_buffer_descriptors_for_maxcold_now[ssd_buf_hdr->ssd_buf_id];
 		    deleteFromLRUNow(ssd_buf_hdr_for_maxcold_now);
-	    }
+	    } 
         if (band_descriptors_for_maxcold_now[band_num].ischosen > 0) { 
 	        SSDBufferDescForMaxColdNow *ssd_buf_hdr_for_maxcold_now = &ssd_buffer_descriptors_for_maxcold_now[ssd_buf_hdr->ssd_buf_id];
 		    addToLRUHeadNow(ssd_buf_hdr_for_maxcold_now);
+//        if (ssd_buffer_strategy_control->n_usedssd != ssd_buffer_strategy_control_for_maxcold_now->n_usedssds)
+//            printf("2================n_usedssd=%ld, now_n_usedssds=%ld\n", ssd_buffer_strategy_control->n_usedssd, ssd_buffer_strategy_control_for_maxcold_now->n_usedssds);
 	    }
     } else {
         /* write hit in read buffer
@@ -600,7 +621,8 @@ hitInMaxColdBufferWrite(SSDBufferDesc * ssd_buf_hdr)
             ssd_buf_hdr_for_maxcold_history = &ssd_buffer_descriptors_for_maxcold_history[ssd_buffer_strategy_control_for_maxcold_history->first_freessd];
             ssd_buffer_strategy_control_for_maxcold_history->first_freessd = ssd_buf_hdr_for_maxcold_history->next_freessd;
             ssd_buf_hdr_for_maxcold_history->next_freessd = -1;
-        }
+        } else 
+            printf("can not get here1\n");
         ssd_buf_hdr_for_maxcold_history->ssd_buf_tag = ssd_buf_hdr->ssd_buf_tag;
         ssd_buf_hdr_for_maxcold_history->ssd_buf_flag |= SSD_BUF_DIRTY;
 		ssdbuftableInsertHistory(&ssd_buf_tag_history, ssd_buf_hash_history, ssd_buf_hdr_for_maxcold_history->ssd_buf_id);
@@ -619,17 +641,29 @@ hitInMaxColdBufferWrite(SSDBufferDesc * ssd_buf_hdr)
 			    addToLRUHeadNow(ssd_buf_hdr_for_maxcold_now);
 		    }
 		    ssd_buffer_strategy_control->n_usedssd++;
+//        if (ssd_buffer_strategy_control->n_usedssd != ssd_buffer_strategy_control_for_maxcold_now->n_usedssds)
+//            printf("3-1================n_usedssd=%ld, now_n_usedssds=%ld\n", ssd_buffer_strategy_control->n_usedssd, ssd_buffer_strategy_control_for_maxcold_now->n_usedssds);
 		    return NULL;
 	    } else {
+	        if (ssd_buffer_strategy_control->first_freessd < 0 && run_times >= PERIODTIMES)
+                pause_and_caculate_next_period_hotdivsize();
 	        flush_fifo_times++;
+            run_times ++;
 
 	        old_ssd_buf_hdr = &ssd_buffer_descriptors[ssd_buffer_strategy_control_for_maxcold_now->last_lru];
 	        ssd_buf_hdr_for_maxcold_now = &ssd_buffer_descriptors_for_maxcold_now[ssd_buffer_strategy_control_for_maxcold_now->last_lru];
 
-	        unsigned long   band_num = GetSMRZoneNumFromSSD(ssd_buf_hdr->ssd_buf_tag.offset);
+	        unsigned long	band_num = GetSMRZoneNumFromSSD(old_ssd_buf_hdr->ssd_buf_tag.offset);
+	        if ((old_ssd_buf_hdr->ssd_buf_flag & SSD_BUF_ISCHOSEN) > 0) {
+	            SSDBufferDescForMaxColdNow *ssd_buf_hdr_for_maxcold_now = &ssd_buffer_descriptors_for_maxcold_now[old_ssd_buf_hdr->ssd_buf_id];
+		        deleteFromLRUNow(ssd_buf_hdr_for_maxcold_now);
+            }
+	        band_num = GetSMRZoneNumFromSSD(ssd_buf_hdr->ssd_buf_tag.offset);
             if (band_descriptors_for_maxcold_now[band_num].ischosen > 0) { 
 		        addToLRUHeadNow(ssd_buf_hdr_for_maxcold_now);
 	        }
+//        if (ssd_buffer_strategy_control->n_usedssd != ssd_buffer_strategy_control_for_maxcold_now->n_usedssds)
+//            printf("3-2================n_usedssd=%ld, now_n_usedssds=%ld\n", ssd_buffer_strategy_control->n_usedssd, ssd_buffer_strategy_control_for_maxcold_now->n_usedssds);
 	        unsigned char	old_flag = old_ssd_buf_hdr->ssd_buf_flag;
 	        SSDBufferTag	old_tag = old_ssd_buf_hdr->ssd_buf_tag;
 	        if (DEBUG)

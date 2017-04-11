@@ -286,6 +286,8 @@ read_block(off_t offset, char *ssd_buffer)
 				exit(-1);
 			}
 			flush_ssd_blocks++;
+	    	if (flush_ssd_blocks % 10000 == 0)
+    			printf("hit num:%lu   flush_ssd_blocks:%lu flush_fifo_times:%lu flush_fifo_blocks:%lu  flusd_bands:%lu\n ", hit_num, flush_ssd_blocks, flush_fifo_times, flush_fifo_blocks, flush_bands);
 			gettimeofday(&tv_begin_temp, &tz_begin_temp);
 			time_begin_temp = tv_begin_temp.tv_sec + tv_begin_temp.tv_usec / 1000000.0;
 			//returnCode = pwrite(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);

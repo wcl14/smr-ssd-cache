@@ -14,6 +14,7 @@ void
 trace_to_iocall(char *trace_file_path)
 {
 	FILE           *trace;
+    printf("%s\n", trace_file_path);
 	if ((trace = fopen(trace_file_path, "rt")) == NULL) {
 		printf("[ERROR] trace_to_iocall():--------Fail to open the trace file!");
 		exit(1);
