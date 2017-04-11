@@ -256,7 +256,7 @@ read_block(off_t offset, char *ssd_buffer)
 			exit(-1);
 		}
 	} else {
-		ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found, 1);
+		ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found, 0);
 		if (found) {
 			read_hit_num++;
 			gettimeofday(&tv_begin_temp, &tz_begin_temp);
@@ -341,7 +341,7 @@ write_block(off_t offset, char *ssd_buffer)
 			exit(-1);
 		}
 	} else {
-		ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found, 0);
+		ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found, 1);
 		flush_ssd_blocks++;
 		if (flush_ssd_blocks % 10000 == 0)
 			printf("hit num:%lu   flush_ssd_blocks:%lu flush_fifo_times:%lu flush_fifo_blocks:%lu  flusd_bands:%lu\n ", hit_num, flush_ssd_blocks, flush_fifo_times, flush_fifo_blocks, flush_bands);
