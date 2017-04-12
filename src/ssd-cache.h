@@ -21,7 +21,6 @@ typedef struct
 
 #define SSD_BUF_VALID 0x01
 #define SSD_BUF_DIRTY 0x02
-#define SSD_BUF_ISCHOSEN 0x04
 
 typedef struct SSDBufferHashBucket
 {

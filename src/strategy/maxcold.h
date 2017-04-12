@@ -41,6 +41,7 @@ typedef struct
     long current_hits;
     long current_pages;
     long current_cold_pages;
+    long current_inssd_pages;
     long to_sort;
 } BandDescForMaxColdHistory;
 
@@ -72,4 +73,3 @@ extern void *hitInMaxColdBuffer(SSDBufferDesc *);
 extern void initSSDBufferForMaxColdWriteOnly();
 extern SSDBufferDesc *getMaxColdBufferWriteOnly(SSDBufferTag, SSDEvictionStrategy, bool);
 extern void *hitInMaxColdBufferWriteOnly(SSDBufferDesc *, bool);
-extern bool isOpenForEvictedWriteOnly(SSDBufferDesc *);

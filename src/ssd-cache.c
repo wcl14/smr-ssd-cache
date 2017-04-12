@@ -210,14 +210,6 @@ isCached(SSDBufferTag ssd_buf_tag, SSDEvictionStrategy strategy)
     return 1;
 }
 
-static bool
-isOpenForEvicted(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy)
-{
-    if (strategy == HotDivSizeWriteOnly)
-        return isOpenForEvictedWriteOnly(ssd_buf_hdr);
-    return 1;
-}
-
 /*
  * read--return the buf_id of buffer according to buf_tag
  */
@@ -294,7 +286,6 @@ read_block(off_t offset, char *ssd_buffer)
 			time_write_ssd += time_now_temp - time_begin_temp;
 		}
 		ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_VALID;
-		ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_ISCHOSEN;
 	}
 }
 
@@ -361,10 +352,6 @@ write_block(off_t offset, char *ssd_buffer)
 		time_now_temp = tv_now_temp.tv_sec + tv_now_temp.tv_usec / 1000000.0;
 		time_write_ssd += time_now_temp - time_begin_temp;
 		ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_VALID | SSD_BUF_DIRTY;
-        if (isOpenForEvicted(ssd_buf_hdr, EvictStrategy) > 0)
-		    ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_ISCHOSEN;
-        else
-		    ssd_buf_hdr->ssd_buf_flag &= ~SSD_BUF_ISCHOSEN;
 	}
 }
 void
