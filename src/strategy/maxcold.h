@@ -57,6 +57,7 @@ typedef struct
     long current_hits;
     long current_pages;
     long current_cold_pages;
+    long current_inssd_pages;
     long to_sort;
 } BandDescForMaxColdHistory;
 
@@ -87,4 +88,3 @@ BandDescForMaxColdNow *band_descriptors_for_maxcold_now;
 extern void initSSDBufferForMaxColdSplitRW();
 extern SSDBufferDesc *getMaxColdBufferSplitRW(SSDBufferTag, bool);
 extern void *hitInMaxColdBufferSplitRW(SSDBufferDesc *, bool);
-extern bool isOpenForEvictedSplitRW(SSDBufferDesc *);
