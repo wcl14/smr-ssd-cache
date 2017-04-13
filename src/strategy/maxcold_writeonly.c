@@ -109,7 +109,7 @@ initSSDBufferForMaxColdWriteOnly()
 
 	ssd_buffer_strategy_control_for_maxcold_history = (SSDBufferStrategyControlForMaxColdHistory *) malloc(sizeof(SSDBufferStrategyControlForMaxColdHistory));
 	ssd_buffer_strategy_control_for_maxcold_now = (SSDBufferStrategyControlForMaxColdNow *) malloc(sizeof(SSDBufferStrategyControlForMaxColdNow));
-	ssd_buffer_descriptors_for_maxcold_history = (SSDBufferDescForMaxColdHistory *) malloc(sizeof(SSDBufferDescForMaxColdHistory) * NSSDBuffers * ((PERIODTIMES - 1) / NSSDBuffers + 2)*10);
+	ssd_buffer_descriptors_for_maxcold_history = (SSDBufferDescForMaxColdHistory *) malloc(sizeof(SSDBufferDescForMaxColdHistory) * NSSDBuffers * ((PERIODTIMES - 1) / NSSDBuffers + 2)*20);
 	ssd_buffer_descriptors_for_maxcold_now = (SSDBufferDescForMaxColdNow *) malloc(sizeof(SSDBufferDescForMaxColdNow) * NSSDBuffers);
 	band_descriptors_for_maxcold_history = (BandDescForMaxColdHistory *) malloc(sizeof(BandDescForMaxColdHistory) * NSMRBands);
 	band_descriptors_for_maxcold_now = (BandDescForMaxColdNow *) malloc(sizeof(BandDescForMaxColdNow) * NSMRBands);
@@ -140,14 +140,14 @@ initSSDBufferForMaxColdWriteOnly()
     ssd_buffer_strategy_control_for_maxcold_history->first_lru = -1;
 	ssd_buffer_strategy_control_for_maxcold_history->last_lru = -1;
     ssd_buffer_strategy_control_for_maxcold_history->first_freessd = 0;
-	ssd_buffer_strategy_control_for_maxcold_history->last_freessd = NSSDBuffers * ((PERIODTIMES - 1) / NSSDBuffers + 2)*10 - 1;
+	ssd_buffer_strategy_control_for_maxcold_history->last_freessd = NSSDBuffers * ((PERIODTIMES - 1) / NSSDBuffers + 2)*20 - 1;
 	ssd_buffer_strategy_control_for_maxcold_history->n_usedssds = 0;
 
 	SSDBufferDescForMaxColdHistory *ssd_buf_hdr_for_maxcold_history;
 	BandDescForMaxColdHistory *band_hdr_for_maxcold_history;
 
 	ssd_buf_hdr_for_maxcold_history = ssd_buffer_descriptors_for_maxcold_history;
-	for (i = 0; i < NSSDBuffers * ((PERIODTIMES - 1) / NSSDBuffers + 2)*10; ssd_buf_hdr_for_maxcold_history++, i++) {
+	for (i = 0; i < NSSDBuffers * ((PERIODTIMES - 1) / NSSDBuffers + 2)*20; ssd_buf_hdr_for_maxcold_history++, i++) {
 		ssd_buf_hdr_for_maxcold_history->ssd_buf_tag.offset = 0;
         ssd_buf_hdr_for_maxcold_history->ssd_buf_flag = 0;
 		ssd_buf_hdr_for_maxcold_history->ssd_buf_id = i;
