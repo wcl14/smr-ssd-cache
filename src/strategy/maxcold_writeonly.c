@@ -80,7 +80,6 @@ resetSSDBufferForMaxColdNow()
 	}
     
     SSDBufferDescForMaxColdHistory *ssd_buf_hdr_for_maxcold_history = &ssd_buffer_descriptors_for_maxcold_history[ssd_buffer_strategy_control_for_maxcold_history->first_lru];
-    next = ssd_buffer_strategy_control_for_maxcold_now->first_lru; 
     for (i = 0; i < ssd_buffer_strategy_control_for_maxcold_history->n_usedssds; i++) {
         unsigned long   band_num = GetSMRZoneNumFromSSD(ssd_buf_hdr_for_maxcold_history->ssd_buf_tag.offset);
         unsigned long   ssd_buf_hash = ssdbuftableHashcode(&ssd_buf_hdr_for_maxcold_history->ssd_buf_tag);
@@ -461,7 +460,7 @@ hitInMaxColdBufferWriteOnly(SSDBufferDesc * ssd_buf_hdr, bool iswrite)
 	    SSDBufferDescForMaxColdNow *ssd_buf_hdr_for_maxcold_now = &ssd_buffer_descriptors_for_maxcold_now[ssd_buf_hdr->ssd_buf_id];
 		deleteFromLRUNow(ssd_buf_hdr_for_maxcold_now);
 	}
-    if (iswrite == 0 || band_descriptors_for_maxcold_now[band_num].ischosen > 0) { 
+    if ((iswrite == 0 && (ssd_buf_hdr->ssd_buf_flag & SSD_BUF_DIRTY) == 0)|| band_descriptors_for_maxcold_now[band_num].ischosen > 0) { 
 	    SSDBufferDescForMaxColdNow *ssd_buf_hdr_for_maxcold_now = &ssd_buffer_descriptors_for_maxcold_now[ssd_buf_hdr->ssd_buf_id];
 		addToLRUHeadNow(ssd_buf_hdr_for_maxcold_now);
 	}
